@@ -59,22 +59,10 @@ final class BuildPublicStructuredContentItemsForTypesAction
         $groupedItems = [];
 
         foreach ($items as $item) {
-            $groupedItems[$item->type->value][] = $this->publicData($item);
+            $groupedItems[$item->type->value][] = BuildPublicStructuredContentItemDataAction::run($item);
         }
 
         return $groupedItems;
-    }
-
-    private function publicData(StructuredContentItem $item): PublicStructuredContentItemData
-    {
-        return new PublicStructuredContentItemData(
-            type: $item->type,
-            title: $item->title,
-            slug: $item->slug,
-            summary: $item->summary,
-            content: $item->content,
-            payload: BuildPublicStructuredContentPayloadAction::run($item->payload),
-        );
     }
 
     /**

@@ -106,13 +106,11 @@ it('sanitizes public payload output for theme adapters', function (): void {
 
     expect($items)->toHaveCount(1)
         ->and($items[0]->payload)->toMatchArray([
-            'quote' => 'Useful quote',
-            'answer' => 'Portable answer.',
-            'company' => 'Example Ltd',
             'image_alt' => 'Office interior',
         ])
         ->and($items[0]->payload)->not->toHaveKey('url')
-        ->and($items[0]->payload)->not->toHaveKey('email');
+        ->and($items[0]->payload)->not->toHaveKey('email')
+        ->and($items[0]->payload)->not->toHaveKeys(['quote', 'answer', 'company']);
 });
 
 it('prevents raw and encoded payload html from rendering as executable public markup', function (): void {
@@ -163,6 +161,6 @@ it('keeps public http and relative payload urls', function (): void {
 
     expect($items[0]->payload)->toMatchArray([
         'url' => 'https://example.com/resource',
-        'email' => 'editor@example.com',
-    ]);
+    ])
+        ->and($items[0]->payload)->not->toHaveKey('email');
 });

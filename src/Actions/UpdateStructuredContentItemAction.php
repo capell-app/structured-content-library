@@ -36,16 +36,26 @@ class UpdateStructuredContentItemAction
             ]);
         }
 
+        ValidateStructuredContentPayloadAction::run($data->type, $data->payload);
+
         $content = EnsurePortableContentHtmlAction::run($data->content);
         $summary = EnsurePortableContentHtmlAction::run($data->summary, 'summary');
         $slugSource = $data->slug !== null && trim($data->slug) !== ''
             ? $data->slug
             : $title;
-        $publishedAt = $this->resolvePublishedAt($item, $data);
 
         for ($attempt = 1; $attempt <= self::MaxUniqueSlugAttempts; $attempt++) {
             try {
-                return DB::transaction(function () use ($item, $data, $title, $slugSource, $summary, $content, $publishedAt): StructuredContentItem {
+                return DB::transaction(function () use ($item, $data, $title, $slugSource, $summary, $content): StructuredContentItem {
+                    $item = StructuredContentItem::query()->whereKey($item->getKey())->lockForUpdate()->firstOrFail();
+                    AuthorizeStructuredContentMutationAction::run($item, $data->siteId);
+
+                    if ($item->type !== $data->type) {
+                        throw ValidationException::withMessages([
+                            'type' => __('capell-structured-content-library::validation.type_locked'),
+                        ]);
+                    }
+
                     $slug = ResolveUniqueStructuredContentSlugAction::run($data->type, $data->siteId, $slugSource, $item);
 
                     $item->update([
@@ -58,7 +68,7 @@ class UpdateStructuredContentItemAction
                         'summary' => $summary !== '' ? $summary : null,
                         'content' => $content,
                         'payload' => $data->payload,
-                        'published_at' => $publishedAt,
+                        'published_at' => $this->resolvePublishedAt($item, $data),
                         'sort_order' => max(0, $data->sortOrder),
                     ]);
 

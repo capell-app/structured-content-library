@@ -37,26 +37,98 @@ Screenshot contract: `docs/screenshots.json`.
 
 ![Structured content create form](docs/screenshots/structured-content-form.png)
 
-- Structured content item list (admin, required).
-- Structured content create form (admin, required).
-- Structured content reusable item edit form (admin, required).
-- Structured content testimonial public render (frontend, optional).
-- Structured content type variation (admin, optional).
-- Structured content empty state (admin, optional).
+- Structured content item list (admin, required evidence).
+- Structured content create form (admin, required evidence).
+- Structured content reusable item edit form (admin, required evidence).
+- Structured content testimonial public render (frontend, supplementary evidence).
+- Structured content type variation (admin, supplementary evidence).
+- Structured content empty state (admin, supplementary evidence).
+- Structured content item list with admin sidebar menu open (admin, supplementary evidence).
 
 ## Technical Shape
 
-- Service providers: `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`.
-- Migrations: `packages/structured-content-library/database/migrations/2026_05_31_000001_create_structured_content_items_table.php`, `packages/structured-content-library/database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`, `packages/structured-content-library/database/migrations/2026_07_10_000001_add_normalized_scope_key_to_structured_content_items.php`.
-- Models: `StructuredContentItem`.
-- Filament classes: `CreateStructuredContentItem`, `EditStructuredContentItem`, `ListStructuredContentItems`, `StructuredContentItemResource`.
-- Policies: `StructuredContentItemPolicy`.
-- Actions: `AuthorizeStructuredContentMutationAction`, `BuildPublicStructuredContentItemsAction`, `BuildPublicStructuredContentItemsForTypesAction`, `BuildPublicStructuredContentPayloadAction`, `BuildStructuredContentSectionsAction`, `CreateStructuredContentItemAction`, `EnsurePortableContentHtmlAction`, `ImportStructuredContentItemsAction`, `ListStructuredContentItemsAction`, `ResolveUniqueStructuredContentSlugAction`, `UpdateStructuredContentItemAction`.
-- Data objects: `PublicStructuredContentItemData`, `StructuredContentImportResultData`, `StructuredContentItemData`, `StructuredContentPayloadData`, `StructuredContentSectionData`.
-- Manifest action API: `buildPublicStructuredContentItems: Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction`, `buildStructuredContentSections: Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction`, `importStructuredContentItems: Capell\StructuredContentLibrary\Actions\ImportStructuredContentItemsAction`, `listStructuredContentItems: Capell\StructuredContentLibrary\Actions\ListStructuredContentItemsAction`.
-- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`.
-- Health checks: `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`.
-- Cache tags: `structured-content-library`.
+### Service providers
+
+- `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`
+
+### Migrations
+
+- `packages/structured-content-library/database/migrations/2026_05_31_000001_create_structured_content_items_table.php`
+- `packages/structured-content-library/database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`
+- `packages/structured-content-library/database/migrations/2026_07_10_000001_add_normalized_scope_key_to_structured_content_items.php`
+
+### Models
+
+- `StructuredContentItem`
+
+### Filament classes
+
+- `CreateStructuredContentItem`
+- `EditStructuredContentItem`
+- `ListStructuredContentItems`
+- `StructuredContentItemResource`
+
+### Policies
+
+- `StructuredContentItemPolicy`
+
+### Actions
+
+- `AuthorizeStructuredContentMutationAction`
+- `BuildPublicStructuredContentItemDataAction`
+- `BuildPublicStructuredContentItemsAction`
+- `BuildPublicStructuredContentItemsForTypesAction`
+- `BuildPublicStructuredContentPayloadAction`
+- `BuildStructuredContentSectionsAction`
+- `CreateStructuredContentItemAction`
+- `EnsurePortableContentHtmlAction`
+- `ImportStructuredContentItemsAction`
+- `ListStructuredContentItemsAction`
+- `ResolveUniqueStructuredContentSlugAction`
+- `SeedStructuredContentScreenshotFixtureAction`
+- `UpdateStructuredContentItemAction`
+- `ValidateStructuredContentPayloadAction`
+
+### Data objects
+
+- `PublicStructuredContentItemData`
+- `StructuredContentDefinitionData`
+- `StructuredContentImportResultData`
+- `StructuredContentItemData`
+- `StructuredContentPayloadData`
+- `StructuredContentSectionData`
+
+### Manifest action API
+
+- `buildPublicStructuredContentItems: Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction`
+- `buildStructuredContentSections: Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction`
+- `importStructuredContentItems: Capell\StructuredContentLibrary\Actions\ImportStructuredContentItemsAction`
+- `listStructuredContentItems: Capell\StructuredContentLibrary\Actions\ListStructuredContentItemsAction`
+
+### Console command classes
+
+- `SeedStructuredContentScreenshotFixtureCommand`
+
+### Manifest contributions
+
+- `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`
+- `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`
+- `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`
+- `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`
+
+### Health checks
+
+- `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`
+
+### Blade views
+
+- `packages/structured-content-library/resources/views/admin/preview.blade.php`
+- `packages/structured-content-library/resources/views/forms/type-cards.blade.php`
+
+### Cache tags
+
+- `structured-content-library`
+
 
 ## Data Model
 
@@ -72,14 +144,14 @@ Screenshot contract: `docs/screenshots.json`.
 - Required packages: `capell-app/admin`, `capell-app/core`.
 - Admin navigation: declares `admin-resource: StructuredContentItemResourceContribution`; each Filament page or resource controls its own navigation visibility.
 - Admin/editor extensions: none declared.
-- Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`.
+- Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`; access also governed by package policies: `StructuredContentItemPolicy`.
 - Public routes: none declared.
 - Database changes: package migrations are declared.
 - Config: no package config files.
 - Settings: no package settings declared.
 - Queues or schedules: none declared.
 - Cache tags: `structured-content-library`.
-- Commands: none declared.
+- Commands: console command classes detected: `SeedStructuredContentScreenshotFixtureCommand`.
 
 ## Common Pitfalls
 
@@ -97,8 +169,7 @@ Screenshot contract: `docs/screenshots.json`.
 ## Quick Start
 
 1. Install the package: `composer require capell-app/structured-content-library`.
-2. Run the required setup: `php artisan migrate`.
-3. Open the Structured content item list and confirm the admin workflow loads.
+2. Open the package admin surface at `/structured-content-library/structured-content-items` and confirm Structured Content Library is available.
 
 ## Next Steps
 

@@ -40,7 +40,7 @@ it('delegates the create page save path to the create Action', function (): void
 
 it('delegates the edit page save path to the update Action', function (): void {
     $record = StructuredContentItem::factory()->create([
-        'type' => StructuredContentType::Service,
+        'type' => StructuredContentType::Faq,
         'status' => StructuredContentStatus::Draft,
         'title' => 'Old service',
         'slug' => 'old-service',

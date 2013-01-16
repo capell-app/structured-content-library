@@ -33,6 +33,8 @@ class CreateStructuredContentItemAction
             ]);
         }
 
+        ValidateStructuredContentPayloadAction::run($data->type, $data->payload);
+
         $content = EnsurePortableContentHtmlAction::run($data->content);
         $summary = EnsurePortableContentHtmlAction::run($data->summary, 'summary');
         $slugSource = $data->slug !== null && trim($data->slug) !== ''

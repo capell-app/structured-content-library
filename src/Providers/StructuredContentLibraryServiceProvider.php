@@ -31,6 +31,7 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
         $package
             ->name(self::$name)
             ->hasTranslations()
+            ->hasViews()
             ->hasCommand(SeedStructuredContentScreenshotFixtureCommand::class)
             ->hasMigrations([
                 '2026_05_31_000001_create_structured_content_items_table',

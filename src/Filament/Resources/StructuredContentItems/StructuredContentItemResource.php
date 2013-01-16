@@ -7,6 +7,8 @@ namespace Capell\StructuredContentLibrary\Filament\Resources\StructuredContentIt
 use BackedEnum;
 use Capell\Admin\Support\SiteScope;
 use Capell\Core\Facades\CapellCore;
+use Capell\StructuredContentLibrary\Data\StructuredContentDefinitionData;
+use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\CreateStructuredContentItem;
@@ -22,13 +24,16 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -53,24 +58,58 @@ class StructuredContentItemResource extends Resource
     public static function form(Schema $configurator): Schema
     {
         return $configurator->components([
-            Section::make(__('capell-structured-content-library::admin.section_content'))
+            Section::make(fn (?StructuredContentItem $record): string => $record === null
+                ? __('capell-structured-content-library::admin.choose_type')
+                : $record->type->getLabel())
                 ->schema([
-                    Select::make('type')
+                    Radio::make('type')
                         ->label(__('capell-structured-content-library::admin.type'))
-                        ->options(self::typeOptions())
-                        ->required(),
+                        ->hiddenLabel()
+                        ->view('capell-structured-content-library::forms.type-cards')
+                        ->options(fn (?StructuredContentItem $record): array => $record === null
+                            ? self::typeOptions()
+                            : [$record->type->value => $record->type->getLabel()])
+                        ->descriptions(self::typeDescriptions())
+                        ->columns(['default' => 1, 'md' => 2, 'xl' => 3])
+                        ->required()
+                        ->live()
+                        ->disabled(fn (?StructuredContentItem $record): bool => $record !== null)
+                        ->dehydrated()
+                        ->helperText(fn (?StructuredContentItem $record): string => __($record === null
+                            ? 'capell-structured-content-library::admin.type_choice_help'
+                            : 'capell-structured-content-library::validation.type_locked'))
+                        ->afterStateUpdated(function (Set $set, ?StructuredContentItem $record): void {
+                            if ($record === null) {
+                                $set('payload', []);
+                            }
+                        }),
+                ])
+                ->collapsible()
+                ->columnSpanFull(),
+            Section::make(__('capell-structured-content-library::admin.section_common'))
+                ->schema([
+                    TextInput::make('title')
+                        ->label(__('capell-structured-content-library::admin.title'))
+                        ->required()
+                        ->maxLength(255),
                     Select::make('status')
                         ->label(__('capell-structured-content-library::admin.status'))
                         ->options(self::statusOptions())
                         ->required()
                         ->default(StructuredContentStatus::Draft->value),
-                    TextInput::make('title')
-                        ->label(__('capell-structured-content-library::admin.title'))
-                        ->required()
-                        ->maxLength(255),
-                    TextInput::make('slug')
-                        ->label(__('capell-structured-content-library::admin.slug'))
-                        ->maxLength(255),
+                ])
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->columns(2)
+                ->columnSpanFull(),
+            Section::make(fn (Get $get): string => ($type = self::payloadTypeFromState($get('type'))) === null
+                ? ''
+                : StructuredContentDefinitionData::forType($type)->groupLabel())
+                ->schema(array_map(self::payloadField(...), StructuredContentPayloadField::cases()))
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->columns(2)
+                ->columnSpanFull(),
+            Section::make(__('capell-structured-content-library::admin.section_content'))
+                ->schema([
                     Textarea::make('summary')
                         ->label(__('capell-structured-content-library::admin.summary'))
                         ->rows(3),
@@ -79,85 +118,33 @@ class StructuredContentItemResource extends Resource
                         ->rows(8)
                         ->helperText(__('capell-structured-content-library::admin.content_help')),
                 ])
-                ->columns(2),
-            Section::make(__('capell-structured-content-library::admin.section_metadata'))
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->columnSpanFull(),
+            Section::make(__('capell-structured-content-library::admin.section_advanced'))
                 ->schema([
-                    DateTimePicker::make('published_at')
-                        ->label(__('capell-structured-content-library::admin.published_at')),
+                    TextInput::make('slug')
+                        ->label(__('capell-structured-content-library::admin.slug'))
+                        ->helperText(__('capell-structured-content-library::admin.slug_help'))
+                        ->maxLength(255),
                     TextInput::make('sort_order')
                         ->label(__('capell-structured-content-library::admin.sort_order'))
                         ->integer()
                         ->minValue(0)
                         ->default(0),
-                    Hidden::make('site_id'),
                 ])
-                ->columns(2),
-            Section::make(__('capell-structured-content-library::admin.section_payload'))
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->collapsed()
+                ->columns(2)
+                ->columnSpanFull(),
+            Section::make(__('capell-structured-content-library::admin.section_publishing'))
                 ->schema([
-                    TextInput::make('payload.eyebrow')
-                        ->label(__('capell-structured-content-library::admin.payload_eyebrow'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'eyebrow')),
-                    TextInput::make('payload.subtitle')
-                        ->label(__('capell-structured-content-library::admin.payload_subtitle'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'subtitle')),
-                    Textarea::make('payload.quote')
-                        ->label(__('capell-structured-content-library::admin.payload_quote'))
-                        ->rows(3)
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'quote')),
-                    TextInput::make('payload.attribution')
-                        ->label(__('capell-structured-content-library::admin.payload_attribution'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'attribution')),
-                    TextInput::make('payload.role')
-                        ->label(__('capell-structured-content-library::admin.payload_role'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'role')),
-                    TextInput::make('payload.company')
-                        ->label(__('capell-structured-content-library::admin.payload_company'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'company')),
-                    TextInput::make('payload.question')
-                        ->label(__('capell-structured-content-library::admin.payload_question'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'question')),
-                    Textarea::make('payload.answer')
-                        ->label(__('capell-structured-content-library::admin.payload_answer'))
-                        ->rows(3)
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'answer')),
-                    TextInput::make('payload.resource_kind')
-                        ->label(__('capell-structured-content-library::admin.payload_resource_kind'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'resource_kind')),
-                    TextInput::make('payload.url')
-                        ->label(__('capell-structured-content-library::admin.payload_url'))
-                        ->url()
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'url')),
-                    TextInput::make('payload.email')
-                        ->label(__('capell-structured-content-library::admin.payload_email'))
-                        ->email()
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'email')),
-                    TextInput::make('payload.phone')
-                        ->label(__('capell-structured-content-library::admin.payload_phone'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'phone')),
-                    TextInput::make('payload.street_address')
-                        ->label(__('capell-structured-content-library::admin.payload_street_address'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'street_address')),
-                    TextInput::make('payload.locality')
-                        ->label(__('capell-structured-content-library::admin.payload_locality'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'locality')),
-                    TextInput::make('payload.region')
-                        ->label(__('capell-structured-content-library::admin.payload_region'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'region')),
-                    TextInput::make('payload.postal_code')
-                        ->label(__('capell-structured-content-library::admin.payload_postal_code'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'postal_code')),
-                    TextInput::make('payload.country_code')
-                        ->label(__('capell-structured-content-library::admin.payload_country_code'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'country_code')),
-                    TextInput::make('payload.image_alt')
-                        ->label(__('capell-structured-content-library::admin.payload_image_alt'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'image_alt')),
-                    TextInput::make('payload.logo_alt')
-                        ->label(__('capell-structured-content-library::admin.payload_logo_alt'))
-                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'logo_alt')),
+                    DateTimePicker::make('published_at')
+                        ->label(__('capell-structured-content-library::admin.published_at')),
                 ])
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
-                ->columns(2),
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->collapsed()
+                ->columnSpanFull(),
+            Hidden::make('site_id'),
         ]);
     }
 
@@ -165,6 +152,8 @@ class StructuredContentItemResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->emptyStateHeading(__('capell-structured-content-library::admin.empty_heading'))
+            ->emptyStateDescription(__('capell-structured-content-library::admin.empty_description'))
             ->columns([
                 TextColumn::make('title')
                     ->label(__('capell-structured-content-library::admin.title'))
@@ -275,66 +264,33 @@ class StructuredContentItemResource extends Resource
      */
     public static function payloadFieldsForType(StructuredContentType $type): array
     {
-        return match ($type) {
-            StructuredContentType::CaseStudy => [
-                'eyebrow',
-                'subtitle',
-                'company',
-                'url',
-                'image_alt',
-            ],
-            StructuredContentType::Testimonial => [
-                'quote',
-                'attribution',
-                'role',
-                'company',
-                'image_alt',
-            ],
-            StructuredContentType::TeamMember => [
-                'subtitle',
-                'role',
-                'company',
-                'email',
-                'phone',
-                'url',
-                'image_alt',
-            ],
-            StructuredContentType::Service => [
-                'eyebrow',
-                'subtitle',
-                'url',
-                'image_alt',
-            ],
-            StructuredContentType::Faq => [
-                'question',
-                'answer',
-            ],
-            StructuredContentType::Resource => [
-                'resource_kind',
-                'url',
-                'image_alt',
-            ],
-            StructuredContentType::Partner => [
-                'company',
-                'url',
-                'logo_alt',
-            ],
-            StructuredContentType::Location => [
-                'email',
-                'phone',
-                'street_address',
-                'locality',
-                'region',
-                'postal_code',
-                'country_code',
-                'url',
-            ],
-            StructuredContentType::Logo => [
-                'company',
-                'url',
-                'logo_alt',
-            ],
-        };
+        return StructuredContentDefinitionData::forType($type)->fieldNames();
+    }
+
+    private static function payloadField(StructuredContentPayloadField $definition): Field
+    {
+        $field = $definition->isMultiline()
+            ? Textarea::make('payload.' . $definition->value)->rows(3)
+            : TextInput::make('payload.' . $definition->value);
+
+        return $field
+            ->label($definition->label())
+            ->required($definition->isRequired())
+            ->rules(fn (): array => $definition->rules())
+            ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, $definition->value));
+    }
+
+    /** @return array<string, string> */
+    private static function typeDescriptions(): array
+    {
+        $descriptions = [];
+
+        foreach (StructuredContentType::cases() as $type) {
+            $definition = StructuredContentDefinitionData::forType($type);
+            $descriptions[$type->value] = $definition->description() . ' ' . $definition->example();
+        }
+
+        return $descriptions;
     }
 
     /**

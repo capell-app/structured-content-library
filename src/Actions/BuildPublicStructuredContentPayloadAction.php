@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Actions;
 
+use Capell\StructuredContentLibrary\Data\StructuredContentDefinitionData;
 use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
+use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
+use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
- * @method static array<string, string> run(?StructuredContentPayloadData $payload)
+ * @method static array<string, string> run(?StructuredContentPayloadData $payload, ?StructuredContentType $type = null)
  */
 final class BuildPublicStructuredContentPayloadAction
 {
@@ -19,7 +22,7 @@ final class BuildPublicStructuredContentPayloadAction
     /**
      * @return array<string, string>
      */
-    public function handle(?StructuredContentPayloadData $payload): array
+    public function handle(?StructuredContentPayloadData $payload, ?StructuredContentType $type = null): array
     {
         if (! $payload instanceof StructuredContentPayloadData) {
             return [];
@@ -27,68 +30,25 @@ final class BuildPublicStructuredContentPayloadAction
 
         $publicPayload = [];
 
-        foreach ($payload->toArray() as $field => $value) {
+        $fields = $type === null
+            ? StructuredContentPayloadField::cases()
+            : StructuredContentDefinitionData::forType($type)->fields;
+        $values = $payload->toArray();
+
+        foreach ($fields as $field) {
+            $value = $values[$field->value] ?? null;
+
             if (! is_string($value)) {
                 continue;
             }
 
-            $publicValue = match ($field) {
-                'url' => $this->publicUrl($value),
-                'email' => $this->publicEmail($value),
-                default => $this->plainText($value),
-            };
+            $publicValue = $field->publicValue($value);
 
             if ($publicValue !== null) {
-                $publicPayload[$field] = $publicValue;
+                $publicPayload[$field->value] = $publicValue;
             }
         }
 
         return $publicPayload;
-    }
-
-    private function plainText(string $value): ?string
-    {
-        $decodedValue = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $withoutDangerousBlocks = preg_replace(
-            '/<\s*(script|style|iframe|object|embed)[^>]*>.*?<\s*\/\s*\1\s*>/is',
-            '',
-            $decodedValue,
-        ) ?? $decodedValue;
-
-        $plainText = trim(strip_tags($withoutDangerousBlocks));
-
-        return $plainText !== '' ? $plainText : null;
-    }
-
-    private function publicEmail(string $value): ?string
-    {
-        $email = trim($value);
-
-        if ($email === '') {
-            return null;
-        }
-
-        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false ? $email : null;
-    }
-
-    private function publicUrl(string $value): ?string
-    {
-        $url = trim($value);
-
-        if ($url === '') {
-            return null;
-        }
-
-        if (str_starts_with($url, '/') && ! str_starts_with($url, '//')) {
-            return $url;
-        }
-
-        $scheme = parse_url($url, PHP_URL_SCHEME);
-
-        if (! is_string($scheme) || ! in_array(strtolower($scheme), ['http', 'https'], true)) {
-            return null;
-        }
-
-        return filter_var($url, FILTER_VALIDATE_URL) !== false ? $url : null;
     }
 }

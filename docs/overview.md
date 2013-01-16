@@ -14,19 +14,25 @@ Go to **Content -> Structured Content Items**. The list shows title, type, statu
 
 The screen's Site field is hidden. A new item created there has global scope and can be returned for every Site. Site-specific items can be created through the package's typed integration/import action and are returned alongside global items only for that Site. The same slug can therefore exist in different Site scopes, but global and site-specific records are not automatically treated as overrides.
 
-The admin list itself is installation-wide rather than automatically filtered to assigned Sites, so titles and statuses can be visible to any user with list access. Create/update actions prevent a site-scoped actor from writing another Site's scope or global scope. However, the record policy treats a global item as usable by any actor who has the corresponding delete/restore/force-delete permission. Keep global items under globally trusted roles and do not grant those destructive permissions to site-only roles when global items are present.
+The admin list includes items assigned to the actor’s Sites and global items; global actors can see every Site. Create/update Actions enforce the actor’s Site scope. Keep global items under globally trusted roles.
 
 ## Create and publish an item
 
-1. Select **Create structured content item**.
-2. Choose the type and status. New items default to **Draft**.
-3. Add the required title, then complete the optional slug, summary, and content.
-4. Complete the fields shown for that type, such as quote and attribution for a testimonial, question and answer for an FAQ, or address/contact fields for a location.
-5. Set **Published at** and **Sort order** when needed, then save.
+1. Select **Create structured content**.
+2. Answer **What are you adding?** using one of the nine type cards. Each explains its purpose with an example.
+3. Add the required **Title** and choose **Status** (initially **Draft**).
+4. Complete the named type-specific group, then optional summary and content. Payload fields remain optional, including for title-only drafts.
+5. Expand **Advanced** for a slug override or sort order, or **Publishing** for a publication date, then save.
+
+Before the first save, choosing another type clears the unsaved type-specific fields and retains common content. After creation, the type is locked. Create a separate item for a different type: an existing record may already be selected by themes and imports under its original meaning. The update Action rejects type changes even from forged form state or stale model instances; there is no conversion operation.
+
+The package-owned `StructuredContentDefinitionData` projects each type’s labels, description, example, named group and typed payload fields. `StructuredContentPayloadField` supplies requiredness, validation and public sanitisation. Create, update and import share the same payload validator, and public adapters use the same field membership. Non-empty incompatible fields are rejected on write, not silently carried into a new type. Historical incompatible fields are omitted from public output; editing and saving the current type removes hidden legacy fields.
 
 Leaving the slug blank derives it from the title. Slugs are unique within the selected type and Site scope; a collision is suffixed rather than overwriting the existing item. Soft-deleted records continue to reserve their slugs, which keeps restore safe but means a replacement may receive `-2` or a later suffix.
 
 Summary and content accept portable semantic HTML only: paragraphs, headings from `h2` to `h4`, lists, links, emphasis, blockquotes, code, and line breaks. Classes, styles, IDs, data/Alpine/Livewire/event attributes, embedded media, scripts, and other presentation markup are rejected on save or import. Put layout and visual styling in the consuming theme or widget.
+
+Use **Preview saved content** on the edit page to inspect the saved values through the same hydrated public projection used by themes. It includes saved drafts, escapes all displayed text and does not publish anything or render your theme’s layout. Unsaved edits are excluded.
 
 ## Visibility and cache behaviour
 

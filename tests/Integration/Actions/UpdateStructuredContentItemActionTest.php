@@ -18,7 +18,7 @@ uses(StructuredContentLibraryTestCase::class);
 
 it('updates a structured content item through typed data', function (): void {
     $item = StructuredContentItem::factory()->create([
-        'type' => StructuredContentType::Service,
+        'type' => StructuredContentType::Faq,
         'status' => StructuredContentStatus::Draft,
         'title' => 'Old title',
         'sort_order' => 5,

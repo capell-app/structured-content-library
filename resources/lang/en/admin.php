@@ -3,6 +3,63 @@
 declare(strict_types=1);
 
 return [
+    'preview' => 'Preview saved content',
+    'preview_help' => 'Plain content from the public adapter, including saved drafts. Save changes to refresh it. Your theme controls the final layout.',
+    'choose_type' => 'What are you adding?',
+    'section_common' => 'Title and status',
+    'section_advanced' => 'Advanced',
+    'section_publishing' => 'Publishing',
+    'type_choice_help' => 'Choose a type, then add the details below. Choosing another type before saving clears its type-specific fields.',
+    'slug_help' => 'Leave blank to create a slug from the title.',
+    'empty_heading' => 'Your reusable content starts here',
+    'empty_description' => 'Add a testimonial, FAQ, service or another content type to reuse across your site.',
+    'types' => [
+        'case_study' => [
+            'description' => 'Tell the story of a completed project.',
+            'example' => 'Example: A faster website for a local charity.',
+            'group' => 'Project details',
+        ],
+        'testimonial' => [
+            'description' => 'Share feedback from a customer.',
+            'example' => 'Example: A client quote with their name and company.',
+            'group' => 'Quote and attribution',
+        ],
+        'team_member' => [
+            'description' => 'Introduce someone on your team.',
+            'example' => 'Example: Alex Morgan, customer support lead.',
+            'group' => 'Profile and contact details',
+        ],
+        'service' => [
+            'description' => 'Describe something you offer.',
+            'example' => 'Example: Website design and ongoing support.',
+            'group' => 'Service details',
+        ],
+        'faq' => [
+            'description' => 'Answer a common question.',
+            'example' => 'Example: How long does delivery take?',
+            'group' => 'Question and answer',
+        ],
+        'resource' => [
+            'description' => 'Link to a useful guide or download.',
+            'example' => 'Example: A getting-started checklist.',
+            'group' => 'Resource and link',
+        ],
+        'partner' => [
+            'description' => 'Introduce an organisation you work with.',
+            'example' => 'Example: A trusted delivery partner.',
+            'group' => 'Partner details',
+        ],
+        'location' => [
+            'description' => 'Help people find or contact a place.',
+            'example' => 'Example: Your Bristol office and opening information.',
+            'group' => 'Address and contact details',
+        ],
+        'logo' => [
+            'description' => 'Identify a brand in a logo collection.',
+            'example' => 'Example: A customer or accreditation brand.',
+            'group' => 'Brand details',
+        ],
+    ],
     'content' => 'Content',
     'content_help' => 'Use portable semantic HTML only. Theme markup and utility classes are rejected.',
     'create_action' => 'Create structured content',

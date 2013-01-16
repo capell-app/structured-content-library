@@ -5,14 +5,24 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Tests;
 
 use Aimeos\Nestedset\NestedSetServiceProvider;
+use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
+use BladeUI\Icons\BladeIconsServiceProvider;
 use Capell\Admin\Providers\AdminServiceProvider as CapellAdminServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Macros\BlueprintMacros;
 use Capell\Core\Providers\CapellServiceProvider;
 use Capell\Core\Support\CapellCoreManager;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
+use Capell\StructuredContentLibrary\Tests\Fixtures\Filament\StructuredContentTestPanelProvider;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
+use Filament\Actions\ActionsServiceProvider;
 use Filament\FilamentServiceProvider;
+use Filament\Forms\FormsServiceProvider;
+use Filament\Infolists\InfolistsServiceProvider;
+use Filament\Notifications\NotificationsServiceProvider;
+use Filament\Schemas\SchemasServiceProvider;
+use Filament\Support\SupportServiceProvider;
+use Filament\Tables\TablesServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,6 +30,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Livewire\LivewireServiceProvider;
 use Lorisleiva\Actions\ActionServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Override;
@@ -105,7 +116,18 @@ class StructuredContentLibraryTestCase extends TestCase
             NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,
+            LivewireServiceProvider::class,
+            BladeIconsServiceProvider::class,
+            BladeHeroiconsServiceProvider::class,
+            SupportServiceProvider::class,
+            SchemasServiceProvider::class,
+            FormsServiceProvider::class,
+            ActionsServiceProvider::class,
+            TablesServiceProvider::class,
+            InfolistsServiceProvider::class,
+            NotificationsServiceProvider::class,
             FilamentServiceProvider::class,
+            StructuredContentTestPanelProvider::class,
             CapellAdminServiceProvider::class,
             StructuredContentLibraryServiceProvider::class,
         ];
