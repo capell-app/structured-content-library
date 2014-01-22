@@ -39,11 +39,8 @@ use Override;
  * @method static Builder<static>|StructuredContentItem archived()
  * @method static Builder<static>|StructuredContentItem draft()
  * @method static Builder<static>|StructuredContentItem forType(StructuredContentType $type)
- * @method static Builder<static>|StructuredContentItem newModelQuery()
- * @method static Builder<static>|StructuredContentItem newQuery()
  * @method static Builder<static>|StructuredContentItem ordered()
  * @method static Builder<static>|StructuredContentItem published()
- * @method static Builder<static>|StructuredContentItem query()
  * @method static Builder<static>|StructuredContentItem visibleToSite(int|null $siteId)
  *
  * @mixin Model

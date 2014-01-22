@@ -89,8 +89,6 @@ return [
     'plural_model_label' => 'structured content items',
     'published_at' => 'Published at',
     'section_content' => 'Content',
-    'section_metadata' => 'Metadata',
-    'section_payload' => 'Reusable payload fields',
     'slug' => 'Slug',
     'sort_order' => 'Sort order',
     'status' => 'Status',

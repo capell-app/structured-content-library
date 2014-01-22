@@ -10,7 +10,7 @@ use Throwable;
 
 final class SeedStructuredContentScreenshotFixtureCommand extends Command
 {
-    protected $signature = 'capell:structured-content-library-screenshot-fixture {--force : Confirm an intentional disposable screenshot seed}';
+    protected $signature = 'capell:structured-content-library-screenshot-fixture {--force : Confirm an intentional disposable screenshot seed} {--empty : Temporarily hide only owned fixture records}';
 
     protected $description = 'Seed Structured Content Library record state for an explicit disposable screenshot run';
 
@@ -23,7 +23,11 @@ final class SeedStructuredContentScreenshotFixtureCommand extends Command
         }
 
         try {
-            SeedStructuredContentScreenshotFixtureAction::run();
+            if ($this->option('empty')) {
+                SeedStructuredContentScreenshotFixtureAction::prepareEmpty();
+            } else {
+                SeedStructuredContentScreenshotFixtureAction::run();
+            }
         } catch (Throwable $exception) {
             $this->error($exception->getMessage());
 

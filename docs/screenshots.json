@@ -4,6 +4,7 @@
     "generatedFor": "deployment-screenshot-runner",
     "requiresInstalledPackage": true,
     "outputDirectory": "packages/structured-content-library/docs/screenshots",
+    "fixtureCommands": ["capell:structured-content-library-screenshot-fixture"],
     "composerRequires": [
         "capell-app/structured-content-library",
         "capell-app/content-sections",
@@ -19,7 +20,7 @@
             "target": "StructuredContentItemResource",
             "scenario": "admin-index",
             "url": "/structured-content-library/structured-content-items",
-            "waitFor": "table",
+            "waitFor": ".fi-ta tbody tr:has-text(\"A clearer editorial workflow\")",
             "required": true,
             "notes": "Capture the item table with type/status badges, reusable content records, and admin actions.",
             "useCase": "An administrator reviews typed reusable content records before themes render them.",
@@ -97,11 +98,23 @@
             "target": "StructuredContentItemResource",
             "scenario": "admin-index",
             "url": "/structured-content-library/structured-content-items",
-            "waitFor": "table",
+            "waitFor": ".fi-ta-empty-state",
             "required": false,
-            "notes": "Capture the empty list state with the create action when no reusable records exist.",
+            "notes": "In the disposable fixture database only, refuse foreign content, soft-delete the six owned fixture rows, capture the real empty table and restore the deterministic populated fixture after each colour scheme.",
             "useCase": "A new site owner understands how to start building a reusable content library.",
-            "screenshotPath": "packages/structured-content-library/docs/screenshots/structured-content-empty-state.png"
+            "screenshotPath": "packages/structured-content-library/docs/screenshots/structured-content-empty-state.png",
+            "entryState": {
+                "state": "empty",
+                "tokenPlaceholder": "{attempt-token}",
+                "setup": {
+                    "command": "capell:structured-content-library-screenshot-fixture",
+                    "args": ["--force", "--empty"]
+                },
+                "restore": {
+                    "command": "capell:structured-content-library-screenshot-fixture",
+                    "args": ["--force"]
+                }
+            }
         },
         {
             "id": "structured-content-library-admin-sidebar-menu-open",

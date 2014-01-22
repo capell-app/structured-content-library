@@ -6,6 +6,7 @@ namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -15,6 +16,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class BuildPublicStructuredContentItemDataAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(StructuredContentItem $item): PublicStructuredContentItemData

@@ -9,11 +9,13 @@ use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /** @method static void run(StructuredContentType $type, ?StructuredContentPayloadData $payload) */
 final class ValidateStructuredContentPayloadAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(StructuredContentType $type, ?StructuredContentPayloadData $payload): void

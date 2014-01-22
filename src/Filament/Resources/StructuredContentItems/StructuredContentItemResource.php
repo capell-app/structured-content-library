@@ -75,9 +75,9 @@ class StructuredContentItemResource extends Resource
                         ->live()
                         ->disabled(fn (?StructuredContentItem $record): bool => $record !== null)
                         ->dehydrated()
-                        ->helperText(fn (?StructuredContentItem $record): string => __($record === null
-                            ? 'capell-structured-content-library::admin.type_choice_help'
-                            : 'capell-structured-content-library::validation.type_locked'))
+                        ->helperText(fn (?StructuredContentItem $record): string => $record === null
+                            ? __('capell-structured-content-library::admin.type_choice_help')
+                            : __('capell-structured-content-library::validation.type_locked'))
                         ->afterStateUpdated(function (Set $set, ?StructuredContentItem $record): void {
                             if ($record === null) {
                                 $set('payload', []);

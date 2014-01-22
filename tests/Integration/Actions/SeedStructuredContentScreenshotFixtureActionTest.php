@@ -9,6 +9,31 @@ use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
 
 uses(StructuredContentLibraryTestCase::class);
 
+it('reaches an empty screenshot state and restores the same six records', function (): void {
+    withStructuredContentScreenshotFixtureEnvironment(function (): void {
+        SeedStructuredContentScreenshotFixtureAction::run();
+        $ids = StructuredContentItem::query()->orderBy('id')->pluck('id')->all();
+
+        expect($ids)->toHaveCount(6);
+        SeedStructuredContentScreenshotFixtureAction::prepareEmpty();
+        expect(StructuredContentItem::query()->count())->toBe(0)
+            ->and(StructuredContentItem::onlyTrashed()->count())->toBe(6);
+
+        SeedStructuredContentScreenshotFixtureAction::run();
+        expect(StructuredContentItem::query()->orderBy('id')->pluck('id')->all())->toBe($ids);
+    });
+});
+
+it('refuses to empty foreign content', function (): void {
+    withStructuredContentScreenshotFixtureEnvironment(function (): void {
+        $item = SeedStructuredContentScreenshotFixtureAction::run();
+        $item->update(['slug' => 'customer-owned-testimonial']);
+
+        expect(fn () => SeedStructuredContentScreenshotFixtureAction::prepareEmpty())->toThrow(RuntimeException::class, 'non-fixture content');
+        expect(StructuredContentItem::query()->count())->toBe(6);
+    });
+});
+
 function withStructuredContentScreenshotFixtureEnvironment(Closure $callback): void
 {
     putenv('CAPELL_SCREENSHOT_FIXTURE=record-state');
@@ -24,13 +49,14 @@ function withStructuredContentScreenshotFixtureEnvironment(Closure $callback): v
     }
 }
 
-it('seeds one published typed record for the disposable screenshot app', function (): void {
+it('seeds a published testimonial plus supporting typed records for the disposable screenshot app', function (): void {
     withStructuredContentScreenshotFixtureEnvironment(function (): void {
         $first = SeedStructuredContentScreenshotFixtureAction::run();
         $second = SeedStructuredContentScreenshotFixtureAction::run();
 
         expect($second->getKey())->toBe($first->getKey())
-            ->and(StructuredContentItem::query()->count())->toBe(1)
+            ->and(StructuredContentItem::query()->count())->toBe(6)
+            ->and(StructuredContentItem::query()->orderBy('id')->value('id'))->toBe($first->getKey())
             ->and($second->status)->toBe(StructuredContentStatus::Published)
             ->and($second->payload?->quote)->toBe('The content workflow gives every team a clear publishing path.');
     });
