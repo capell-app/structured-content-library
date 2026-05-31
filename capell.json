@@ -1,0 +1,109 @@
+{
+    "manifest-version": 3,
+    "name": "capell-app/structured-content-library",
+    "slug": "structured-content-library",
+    "displayName": "Structured Content Library",
+    "kind": "package",
+    "capellApiVersion": "^4.0",
+    "version": "4.x-dev",
+    "description": "Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.",
+    "product": {
+        "group": "Capell Foundation",
+        "tier": "free",
+        "bundle": "foundation"
+    },
+    "namespace": "Capell\\StructuredContentLibrary",
+    "surfaces": ["admin", "shared"],
+    "dependencies": {
+        "requires": ["capell-app/admin", "capell-app/core"],
+        "supports": [
+            "capell-app/content-sections",
+            "capell-app/foundation-theme"
+        ],
+        "conflicts": []
+    },
+    "providers": {
+        "metadata": [],
+        "install": [],
+        "runtime": [
+            "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider"
+        ],
+        "admin": [
+            "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider"
+        ],
+        "frontend": []
+    },
+    "contributes": [
+        {
+            "type": "admin-resource",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentItemResourceContribution",
+            "resourceClass": "Capell\\StructuredContentLibrary\\Filament\\Resources\\StructuredContentItems\\StructuredContentItemResource",
+            "group": "StructuredContentItem"
+        }
+    ],
+    "database": {
+        "migrations": true,
+        "settings": false,
+        "requiredTables": ["structured_content_items"]
+    },
+    "commands": {
+        "install": null,
+        "setup": null,
+        "demo": null,
+        "doctor": null
+    },
+    "settings": [],
+    "permissions": [],
+    "capabilities": ["structured-content-library"],
+    "performance": {
+        "frontendRenderBudgetMs": 10,
+        "adminQueryBudget": 20,
+        "cacheTags": ["structured-content-library"],
+        "cacheSafety": {
+            "cacheable": true,
+            "variesBy": ["site", "locale"],
+            "sensitiveOutput": false,
+            "invalidationSources": [
+                {
+                    "model": "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem",
+                    "events": ["created", "updated", "deleted"]
+                }
+            ],
+            "queueInvalidation": true
+        }
+    },
+    "healthChecks": [
+        {
+            "key": "structured-content-library.package-health",
+            "label": "Structured Content Library package surfaces, providers, and install health are discoverable by Diagnostics.",
+            "class": "Capell\\StructuredContentLibrary\\Health\\StructuredContentLibraryHealthCheck",
+            "severity": "critical",
+            "surface": "shared"
+        }
+    ],
+    "commercial": {
+        "proposedLicense": "free",
+        "requestedCertification": "first-party",
+        "supportPolicy": "capell-first-party",
+        "privateDocsRequested": false
+    },
+    "marketplace": {
+        "summary": "Portable reusable content records for theme-rendered business content.",
+        "screenshots": [
+            {
+                "path": "docs/assets/marketplace/extension-card.jpg",
+                "alt": "Structured Content Library extension preview image",
+                "caption": "Structured Content Library extension preview"
+            }
+        ],
+        "categories": ["foundation", "shared", "content"]
+    },
+    "contributionTraceability": {
+        "deferredContributions": [
+            "content-section-adapter",
+            "migration",
+            "model",
+            "theme-adapter"
+        ]
+    }
+}

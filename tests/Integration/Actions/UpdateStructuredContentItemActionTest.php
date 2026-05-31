@@ -1,0 +1,57 @@
+<?php
+
+declare(strict_types=1);
+
+use Capell\StructuredContentLibrary\Actions\UpdateStructuredContentItemAction;
+use Capell\StructuredContentLibrary\Data\StructuredContentItemData;
+use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
+use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
+use Capell\StructuredContentLibrary\Enums\StructuredContentType;
+use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Illuminate\Validation\ValidationException;
+
+require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
+
+uses(StructuredContentLibraryTestCase::class);
+
+it('updates a structured content item through typed data', function (): void {
+    $item = StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service,
+        'status' => StructuredContentStatus::Draft,
+        'title' => 'Old title',
+        'sort_order' => 5,
+    ]);
+
+    $updated = UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
+        type: StructuredContentType::Faq,
+        title: '  Updated title  ',
+        status: StructuredContentStatus::Published,
+        slug: 'Updated Title!',
+        summary: '  Updated summary.  ',
+        content: '<p>Portable updated content.</p>',
+        payload: new StructuredContentPayloadData(question: 'Can this be edited?', answer: 'Yes.'),
+        publishedAt: now()->subMinute(),
+        sortOrder: 2,
+    ));
+
+    expect($updated->type)->toBe(StructuredContentType::Faq)
+        ->and($updated->status)->toBe(StructuredContentStatus::Published)
+        ->and($updated->title)->toBe('Updated title')
+        ->and($updated->slug)->toBe('updated-title')
+        ->and($updated->summary)->toBe('Updated summary.')
+        ->and($updated->content)->toBe('<p>Portable updated content.</p>')
+        ->and($updated->payload)->toBeInstanceOf(StructuredContentPayloadData::class)
+        ->and($updated->payload?->question)->toBe('Can this be edited?')
+        ->and($updated->sort_order)->toBe(2);
+});
+
+it('rejects designed markup during updates', function (): void {
+    $item = StructuredContentItem::factory()->create();
+
+    expect(fn (): mixed => UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Designed service',
+        content: '<section class="grid gap-4"><p>Designed markup.</p></section>',
+    )))->toThrow(ValidationException::class);
+});
