@@ -5,8 +5,10 @@ declare(strict_types=1);
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
+use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\StructuredContentItemResource;
 use Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution;
+use Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
@@ -32,9 +34,14 @@ it('declares provider classes and package metadata', function (): void {
         ->and($manifest['contributes'][0]['type'])->toBe('admin-resource')
         ->and($manifest['contributes'][0]['class'])->toBe(StructuredContentItemResourceContribution::class)
         ->and($manifest['contributes'][0]['resourceClass'])->toBe(StructuredContentItemResource::class)
+        ->and($manifest['contributes'])->toContain([
+            'type' => 'model',
+            'class' => StructuredContentModelsContribution::class,
+        ])
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('admin-resource')
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('content-section-adapter')
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('theme-adapter')
+        ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([])
         ->and($manifest['actions']['buildStructuredContentSections'])
         ->toBe(BuildStructuredContentSectionsAction::class)
         ->and($manifest['capabilities'])->toContain(
@@ -42,6 +49,23 @@ it('declares provider classes and package metadata', function (): void {
             'structured-content-theme-adapter',
         )
         ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
+});
+
+it('declares all first-class reusable content concepts', function (): void {
+    expect(array_map(
+        static fn (StructuredContentType $type): string => $type->value,
+        StructuredContentType::cases(),
+    ))->toBe([
+        'case_study',
+        'testimonial',
+        'team_member',
+        'service',
+        'faq',
+        'resource',
+        'partner',
+        'location',
+        'logo',
+    ]);
 });
 
 it('registers models and protected tables when installed', function (): void {

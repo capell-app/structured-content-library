@@ -39,6 +39,10 @@
             "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentItemResourceContribution",
             "resourceClass": "Capell\\StructuredContentLibrary\\Filament\\Resources\\StructuredContentItems\\StructuredContentItemResource",
             "group": "StructuredContentItem"
+        },
+        {
+            "type": "model",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentModelsContribution"
         }
     ],
     "database": {
@@ -111,6 +115,6 @@
         "categories": ["foundation", "shared", "content"]
     },
     "contributionTraceability": {
-        "deferredContributions": ["owning-theme-adapter-wiring"]
+        "deferredContributions": []
     }
 }

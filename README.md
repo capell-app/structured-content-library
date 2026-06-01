@@ -24,6 +24,7 @@ The first slice provides:
 - `StructuredContentType`, a backed enum for the supported content concepts
 - `StructuredContentStatus`, a backed enum for draft/published/archive state
 - `StructuredContentItemData` and `StructuredContentPayloadData` DTOs for structured writes and JSON payloads
-- Actions for creating records and listing visible records by type/site
+- Actions for creating, updating, importing, listing, and building public-safe section payloads by type/site
 
 Use `ListStructuredContentItemsAction::run($type, $siteId)` when a theme or package needs published reusable records.
+Use `BuildStructuredContentSectionsAction::run($sections, $siteId)` when a theme or content-section package needs grouped section-ready payloads.

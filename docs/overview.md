@@ -20,7 +20,8 @@ Database content must stay portable across themes. The create action accepts sim
 
 Admin/editor UI, signed URLs, selectors, package names, and frontend authoring internals must not be stored in these records or emitted by public renderers.
 
-## Next Slices
+## Integration
 
-- Wire owning theme/content-section packages to `BuildStructuredContentSectionsAction` instead of demo-shaped data.
-- Add package-specific import commands where a theme or demo package has enough known content to migrate automatically.
+Owning theme and content-section packages should consume `BuildStructuredContentSectionsAction` instead of storing demo-shaped business content. This package owns the reusable records, public-safe DTOs, and section adapter payload shape; themes remain responsible for their rendered presentation.
+
+Package-specific import commands can wrap `ImportStructuredContentItemsAction` when a theme or demo package has enough known content to migrate automatically.
