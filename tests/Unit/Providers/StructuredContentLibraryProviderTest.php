@@ -32,6 +32,14 @@ it('declares provider classes and package metadata', function (): void {
         ->and($manifest['contributes'][0]['class'])->toBe(StructuredContentItemResourceContribution::class)
         ->and($manifest['contributes'][0]['resourceClass'])->toBe(StructuredContentItemResource::class)
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('admin-resource')
+        ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('content-section-adapter')
+        ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('theme-adapter')
+        ->and($manifest['actions']['buildStructuredContentSections'])
+        ->toBe('Capell\\StructuredContentLibrary\\Actions\\BuildStructuredContentSectionsAction')
+        ->and($manifest['capabilities'])->toContain(
+            'structured-content-section-adapter',
+            'structured-content-theme-adapter',
+        )
         ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
 });
 

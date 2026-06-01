@@ -53,8 +53,20 @@
         "doctor": null
     },
     "settings": [],
+    "actions": {
+        "buildPublicStructuredContentItems": "Capell\\StructuredContentLibrary\\Actions\\BuildPublicStructuredContentItemsAction",
+        "buildStructuredContentSections": "Capell\\StructuredContentLibrary\\Actions\\BuildStructuredContentSectionsAction",
+        "importStructuredContentItems": "Capell\\StructuredContentLibrary\\Actions\\ImportStructuredContentItemsAction",
+        "listStructuredContentItems": "Capell\\StructuredContentLibrary\\Actions\\ListStructuredContentItemsAction"
+    },
     "permissions": [],
-    "capabilities": ["structured-content-library"],
+    "capabilities": [
+        "structured-content-library",
+        "structured-content-public-adapter",
+        "structured-content-section-adapter",
+        "structured-content-theme-adapter",
+        "structured-content-import"
+    ],
     "performance": {
         "frontendRenderBudgetMs": 10,
         "adminQueryBudget": 20,
@@ -99,11 +111,6 @@
         "categories": ["foundation", "shared", "content"]
     },
     "contributionTraceability": {
-        "deferredContributions": [
-            "content-section-adapter",
-            "migration",
-            "model",
-            "theme-adapter"
-        ]
+        "deferredContributions": ["owning-theme-adapter-wiring"]
     }
 }
