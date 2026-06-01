@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\StructuredContentItemResource;
 use Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
@@ -35,7 +36,7 @@ it('declares provider classes and package metadata', function (): void {
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('content-section-adapter')
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('theme-adapter')
         ->and($manifest['actions']['buildStructuredContentSections'])
-        ->toBe('Capell\\StructuredContentLibrary\\Actions\\BuildStructuredContentSectionsAction')
+        ->toBe(BuildStructuredContentSectionsAction::class)
         ->and($manifest['capabilities'])->toContain(
             'structured-content-section-adapter',
             'structured-content-theme-adapter',
