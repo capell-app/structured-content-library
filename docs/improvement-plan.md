@@ -1,4 +1,5 @@
 # Structured Content Library — Improvement & Growth Plan
+
 > Package: capell-app/structured-content-library · Kind: package · Tier: free · Product group: Capell Foundation · Bundle: foundation · Status: Draft
 
 ## 1. Snapshot
@@ -27,11 +28,11 @@ Structured Content Library provides one package-owned Eloquent model (`Structure
 
 Manifest `capabilities[]`: `structured-content-library`, `structured-content-public-adapter`, `structured-content-section-adapter`, `structured-content-theme-adapter`, `structured-content-import`.
 
-- **Section/theme adapter capabilities are advertised but not wired (table-stakes, currently a manifest-only claim).** `structured-content-section-adapter` and `structured-content-theme-adapter` have **no** registration code in `src/` — grep finds zero references to a content-sections source registry, theme adapter contract, or `registerSectionSource`-style hook. The only deliverable is `BuildStructuredContentSectionsAction`, which a consumer must call manually. `StructuredContentLibraryProviderTest` even asserts these are *not* in `deferredContributions` (claiming them delivered). Either register a real adapter into `capell-app/content-sections`/`capell-app/foundation-theme`, or downgrade the capability strings and mark them deferred. — `capell.json` (`capabilities`, `contributionTraceability`), `tests/Unit/Providers/StructuredContentLibraryProviderTest.php`
+- **Section/theme adapter capabilities are advertised but not wired (table-stakes, currently a manifest-only claim).** `structured-content-section-adapter` and `structured-content-theme-adapter` have **no** registration code in `src/` — grep finds zero references to a content-sections source registry, theme adapter contract, or `registerSectionSource`-style hook. The only deliverable is `BuildStructuredContentSectionsAction`, which a consumer must call manually. `StructuredContentLibraryProviderTest` even asserts these are _not_ in `deferredContributions` (claiming them delivered). Either register a real adapter into `capell-app/content-sections`/`capell-app/foundation-theme`, or downgrade the capability strings and mark them deferred. — `capell.json` (`capabilities`, `contributionTraceability`), `tests/Unit/Providers/StructuredContentLibraryProviderTest.php`
 
-- **Custom / extensible content types (differentiator).** `StructuredContentType` is a hard-coded 9-case enum. A structured-content library's headline value vs. WordPress is *user-defined* content types. There is no registry (`CapellCore::registerStructuredContentType(...)`-style) for downstream packages/themes to add a type. This is the single biggest growth lever. — `src/Enums/StructuredContentType.php`
+- **Custom / extensible content types (differentiator).** `StructuredContentType` is a hard-coded 9-case enum. A structured-content library's headline value vs. WordPress is _user-defined_ content types. There is no registry (`CapellCore::registerStructuredContentType(...)`-style) for downstream packages/themes to add a type. This is the single biggest growth lever. — `src/Enums/StructuredContentType.php`
 
-- **Repeatable / nested field groups (table-stakes for structured content).** `payload` is a single flat DTO of scalars. There is no support for repeatable groups (e.g. a service with N feature bullets, a team member with N social links, an FAQ *set*). Today this forces one row per item with no grouping primitive. — `src/Data/StructuredContentPayloadData.php`
+- **Repeatable / nested field groups (table-stakes for structured content).** `payload` is a single flat DTO of scalars. There is no support for repeatable groups (e.g. a service with N feature bullets, a team member with N social links, an FAQ _set_). Today this forces one row per item with no grouping primitive. — `src/Data/StructuredContentPayloadData.php`
 
 - **Relations / references between items (differentiator).** No way to reference one item from another (e.g. testimonial → team member, case study → service). No `references` column, morph, or relation beyond `site`. — `src/Models/StructuredContentItem.php`
 
@@ -71,11 +72,11 @@ Manifest `capabilities[]`: `structured-content-library`, `structured-content-pub
 
 This is a **free / foundation / bundled** package (`product.tier: free`, `bundle: foundation`, `commercial.proposedLicense: free`, `requestedCertification: first-party`). Its strategic role is to be the typed-content substrate other paid packages and themes consume — so its value is measured by adoption depth, not standalone revenue.
 
-- **`marketplace.summary` critique.** Current: *"Portable reusable content records for theme-rendered business content."* — abstract, jargon-led ("records", "theme-rendered"), gives a browsing user no concrete picture. Improved: *"A typed content library for testimonials, case studies, team members, FAQs, services and more — reusable, theme-safe records your themes render anywhere."* Naming the concrete types is the hook; "theme-safe" signals the portability guard that differentiates it from a free-text block.
+- **`marketplace.summary` critique.** Current: _"Portable reusable content records for theme-rendered business content."_ — abstract, jargon-led ("records", "theme-rendered"), gives a browsing user no concrete picture. Improved: _"A typed content library for testimonials, case studies, team members, FAQs, services and more — reusable, theme-safe records your themes render anywhere."_ Naming the concrete types is the hook; "theme-safe" signals the portability guard that differentiates it from a free-text block.
 
-- **`composer.json` description critique.** Current: *"Reusable structured content records for Capell themes and packages."* Acceptable but interchangeable with the manifest `description`. Tighten and align the two (manifest `description` lists all nine types; composer should match the shorter marketing line). Improved composer description: *"Typed, portable content records (testimonials, case studies, team, FAQs, services…) that Capell themes and packages render safely."*
+- **`composer.json` description critique.** Current: _"Reusable structured content records for Capell themes and packages."_ Acceptable but interchangeable with the manifest `description`. Tighten and align the two (manifest `description` lists all nine types; composer should match the shorter marketing line). Improved composer description: _"Typed, portable content records (testimonials, case studies, team, FAQs, services…) that Capell themes and packages render safely."_
 
-- **free/bundle vs premium.** Correctly free/foundation — it should be the gravity well that makes premium packages (content-sections, themes, automation) more valuable. Keep the model/Actions free; the *premium* upsell surface is layered features: revisions, API exposure, custom-type registry, media handling (§3). Do not paywall the core read Actions — that would break the foundation role.
+- **free/bundle vs premium.** Correctly free/foundation — it should be the gravity well that makes premium packages (content-sections, themes, automation) more valuable. Keep the model/Actions free; the _premium_ upsell surface is layered features: revisions, API exposure, custom-type registry, media handling (§3). Do not paywall the core read Actions — that would break the foundation role.
 
 - **Screenshot / media gaps.** Only one generic extension card. For an admin-surface package, add: (1) the list table with type/status badges, (2) the create form showing the type + payload sections, (3) a theme rendering published items (proves the "theme renders the data" story). The marketplace currently can't show the product actually working.
 
@@ -85,21 +86,21 @@ This is a **free / foundation / bundled** package (`product.tier: free`, `bundle
 
 ## 6. Prioritized Roadmap
 
-| Item | Bucket | Effort | Impact | Section ref |
-|------|--------|--------|--------|-------------|
-| Sanitize `summary` via portable-HTML guard | Now | S | High (public safety) | §2, §4 |
-| Implement real health check (drop stub) | Now | S | High (false-green critical) | §2, §4 |
-| Add unique index on `(type, site_id, slug)` + fix null-slug import dedup | Now | S | High (data integrity) | §2, §4 |
-| Wire section/theme adapter OR mark capabilities deferred | Now | M | High (manifest honesty) | §3 |
-| Document/assert payload public-output escaping contract (+ arch/XSS test) | Now | S | High (public safety) | §4 |
-| Default `published_at` to now() on publish transition | Now | S | Med (correctness) | §2 |
-| Add Filament test for admin save path (Action delegation) | Next | S | Med (test gap) | §4 |
-| Type-aware payload form fields (`->visible()` by type) | Next | M | Med (admin UX) | §2 |
-| Trashed filter + restore/delete actions + reorderable table | Next | S | Med (admin UX/safety) | §2 |
-| Slug collision uniquing in write actions | Next | M | Med (URL stability) | §2 |
-| Implement declared caching + invalidation registry; benchmark budget | Next | M | Med (perf, manifest match) | §4 |
-| Custom/extensible content-type registry | Later | L | High (differentiator) | §3, §5 |
-| Repeatable/nested payload field groups | Later | L | High (differentiator) | §3 |
-| Read API (public JSON resource/endpoint) | Later | M | Med (portability story) | §3, §5 |
-| Revisions/versioning + Export action; media handling; i18n content | Later | L | Med (premium upsell) | §3, §5 |
-| Marketplace: add 3 real screenshots + rewrite summary/description | Now | S | Med (positioning) | §5 |
+| Item                                                                      | Bucket | Effort | Impact                      | Section ref |
+| ------------------------------------------------------------------------- | ------ | ------ | --------------------------- | ----------- |
+| Sanitize `summary` via portable-HTML guard                                | Now    | S      | High (public safety)        | §2, §4      |
+| Implement real health check (drop stub)                                   | Now    | S      | High (false-green critical) | §2, §4      |
+| Add unique index on `(type, site_id, slug)` + fix null-slug import dedup  | Now    | S      | High (data integrity)       | §2, §4      |
+| Wire section/theme adapter OR mark capabilities deferred                  | Now    | M      | High (manifest honesty)     | §3          |
+| Document/assert payload public-output escaping contract (+ arch/XSS test) | Now    | S      | High (public safety)        | §4          |
+| Default `published_at` to now() on publish transition                     | Now    | S      | Med (correctness)           | §2          |
+| Add Filament test for admin save path (Action delegation)                 | Next   | S      | Med (test gap)              | §4          |
+| Type-aware payload form fields (`->visible()` by type)                    | Next   | M      | Med (admin UX)              | §2          |
+| Trashed filter + restore/delete actions + reorderable table               | Next   | S      | Med (admin UX/safety)       | §2          |
+| Slug collision uniquing in write actions                                  | Next   | M      | Med (URL stability)         | §2          |
+| Implement declared caching + invalidation registry; benchmark budget      | Next   | M      | Med (perf, manifest match)  | §4          |
+| Custom/extensible content-type registry                                   | Later  | L      | High (differentiator)       | §3, §5      |
+| Repeatable/nested payload field groups                                    | Later  | L      | High (differentiator)       | §3          |
+| Read API (public JSON resource/endpoint)                                  | Later  | M      | Med (portability story)     | §3, §5      |
+| Revisions/versioning + Export action; media handling; i18n content        | Later  | L      | Med (premium upsell)        | §3, §5      |
+| Marketplace: add 3 real screenshots + rewrite summary/description         | Now    | S      | Med (positioning)           | §5          |
