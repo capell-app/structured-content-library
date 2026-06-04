@@ -10,13 +10,15 @@ This keeps the first slice small while still giving themes stable package-owned 
 
 `BuildPublicStructuredContentItemsAction` exposes published, site-aware, type-filtered DTOs for themes and content-section adapters. The DTO output omits model IDs, site IDs, admin fields, package names, and editor metadata.
 
+Payload values in public DTOs are filtered at the package boundary. Text-like payload fields are reduced to plain text, unsafe URL schemes are removed, and emails must validate before they are emitted. This keeps the adapter safe even when downstream theme code consumes reusable fields in different section templates.
+
 `BuildStructuredContentSectionsAction` groups those public DTOs into section-ready payloads for themes and content-section packages. Consumers pass section keys with content types, labels, and limits; the action returns only sections that have public items.
 
 `ImportStructuredContentItemsAction` gives demo kits, themes, and migration tools a package-owned importer for moving existing reusable content into this table. Imports reuse the create/update action boundaries, so portable HTML validation and slug normalization stay consistent.
 
 ## Content Safety
 
-Database content must stay portable across themes. The create action accepts simple semantic HTML in `content` and rejects designed markup such as classes, styles, IDs, data attributes, and non-semantic wrapper tags.
+Database content must stay portable across themes. The create and update actions accept simple semantic HTML in `content` and `summary`, and reject designed markup such as classes, styles, IDs, data attributes, inline handlers, and non-semantic wrapper tags.
 
 Admin/editor UI, signed URLs, selectors, package names, and frontend authoring internals must not be stored in these records or emitted by public renderers.
 

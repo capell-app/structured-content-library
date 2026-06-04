@@ -43,7 +43,7 @@ class UpdateStructuredContentItemAction
                 'content' => $content,
                 'payload' => $data->payload,
                 'published_at' => $data->status === StructuredContentStatus::Published
-                    ? $data->publishedAt
+                    ? ($data->publishedAt ?? now())
                     : null,
                 'sort_order' => max(0, $data->sortOrder),
             ]);

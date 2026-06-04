@@ -68,3 +68,14 @@ it('rejects unsafe summary markup before it can be stored', function (): void {
 
     $this->fail('Unsafe summary markup was stored.');
 });
+
+it('defaults published_at when publishing without an explicit date', function (): void {
+    $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Published service',
+        status: StructuredContentStatus::Published,
+        content: '<p>Portable content.</p>',
+    ));
+
+    expect($item->published_at)->not->toBeNull();
+});

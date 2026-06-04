@@ -33,7 +33,7 @@ class BuildPublicStructuredContentItemsAction
                 slug: $item->slug,
                 summary: $item->summary,
                 content: $item->content,
-                payload: $item->payload?->toArray() ?? [],
+                payload: BuildPublicStructuredContentPayloadAction::run($item->payload),
             ))
             ->values()
             ->all();

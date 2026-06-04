@@ -56,9 +56,13 @@ final class ImportStructuredContentItemsAction
 
     private function existingItem(StructuredContentItemData $data): ?StructuredContentItem
     {
-        $slug = $data->slug === null ? null : Str::slug($data->slug);
+        $slugSource = $data->slug !== null && trim($data->slug) !== ''
+            ? $data->slug
+            : $data->title;
 
-        if ($slug === null || $slug === '') {
+        $slug = Str::slug($slugSource);
+
+        if ($slug === '') {
             return null;
         }
 

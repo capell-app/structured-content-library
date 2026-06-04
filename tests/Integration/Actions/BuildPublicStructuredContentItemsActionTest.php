@@ -88,3 +88,46 @@ it('limits public structured content adapter output', function (): void {
         ->and($items[0]->title)->toBe('First service')
         ->and($items[1]->title)->toBe('Second service');
 });
+
+it('sanitizes public payload output for theme adapters', function (): void {
+    StructuredContentItem::factory()->published()->type(StructuredContentType::Resource)->create([
+        'title' => 'Unsafe payload',
+        'payload' => [
+            'quote' => '<script>alert("xss")</script><strong>Useful quote</strong>',
+            'answer' => '<p onclick="alert(1)">Portable answer.</p>',
+            'url' => 'javascript:alert(1)',
+            'email' => 'not-an-email',
+            'company' => '<img src=x onerror=alert(1)>Example Ltd',
+            'image_alt' => '<span>Office interior</span>',
+        ],
+    ]);
+
+    $items = BuildPublicStructuredContentItemsAction::run(StructuredContentType::Resource);
+
+    expect($items)->toHaveCount(1)
+        ->and($items[0]->payload)->toMatchArray([
+            'quote' => 'Useful quote',
+            'answer' => 'Portable answer.',
+            'company' => 'Example Ltd',
+            'image_alt' => 'Office interior',
+        ])
+        ->and($items[0]->payload)->not->toHaveKey('url')
+        ->and($items[0]->payload)->not->toHaveKey('email');
+});
+
+it('keeps public http and relative payload urls', function (): void {
+    StructuredContentItem::factory()->published()->type(StructuredContentType::Resource)->create([
+        'title' => 'Safe payload URL',
+        'payload' => [
+            'url' => 'https://example.com/resource',
+            'email' => 'editor@example.com',
+        ],
+    ]);
+
+    $items = BuildPublicStructuredContentItemsAction::run(StructuredContentType::Resource);
+
+    expect($items[0]->payload)->toMatchArray([
+        'url' => 'https://example.com/resource',
+        'email' => 'editor@example.com',
+    ]);
+});

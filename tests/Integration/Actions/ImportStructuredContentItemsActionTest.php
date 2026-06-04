@@ -69,3 +69,27 @@ it('can skip existing structured content records during imports', function (): v
         ->and($result->skipped)->toBe(1)
         ->and(StructuredContentItem::query()->first()?->title)->toBe('Strategy');
 });
+
+it('deduplicates imports by generated slug when no slug is supplied', function (): void {
+    $firstResult = ImportStructuredContentItemsAction::run([
+        [
+            'type' => StructuredContentType::Service,
+            'title' => 'Strategy Consulting',
+            'content' => '<p>Portable content.</p>',
+        ],
+    ]);
+
+    $secondResult = ImportStructuredContentItemsAction::run([
+        [
+            'type' => StructuredContentType::Service,
+            'title' => 'Strategy Consulting',
+            'summary' => 'Updated summary',
+            'content' => '<p>Updated portable content.</p>',
+        ],
+    ]);
+
+    expect($firstResult->created)->toBe(1)
+        ->and($secondResult->updated)->toBe(1)
+        ->and(StructuredContentItem::query()->count())->toBe(1)
+        ->and(StructuredContentItem::query()->first()?->summary)->toBe('Updated summary');
+});

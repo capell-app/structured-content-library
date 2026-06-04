@@ -42,5 +42,6 @@ it('installs the structured content items table', function (): void {
             'payload',
             'published_at',
             'sort_order',
-        ]))->toBeTrue();
+        ]))->toBeTrue()
+        ->and(Schema::hasIndex('structured_content_items', 'structured_content_type_site_slug_unique'))->toBeTrue();
 });

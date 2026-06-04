@@ -28,3 +28,7 @@ The first slice provides:
 
 Use `ListStructuredContentItemsAction::run($type, $siteId)` when a theme or package needs published reusable records.
 Use `BuildStructuredContentSectionsAction::run($sections, $siteId)` when a theme or content-section package needs grouped section-ready payloads.
+
+Public adapter payloads are filtered before they leave the package boundary: scalar payload fields are emitted as plain text, `url` must be HTTP(S) or a root-relative URL, and `email` must validate as an email address. Themes should still render values with normal Blade escaping unless they are intentionally rendering the already-validated `content` or `summary` portable HTML fields.
+
+When a record is saved as published without an explicit `published_at`, the package stores the current timestamp so ordering and audit trails can distinguish newly published records from drafts.

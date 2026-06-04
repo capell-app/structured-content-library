@@ -23,7 +23,7 @@ class StructuredContentItemFactory extends Factory
      */
     public function definition(): array
     {
-        $title = 'Example structured content';
+        $title = 'Example structured content ' . $this->faker->unique()->numberBetween(1, 1_000_000);
 
         return [
             'site_id' => null,

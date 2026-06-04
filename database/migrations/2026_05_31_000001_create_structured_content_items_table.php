@@ -32,6 +32,7 @@ return new class extends Migration
 
             $table->index(['site_id', 'type', 'status', 'sort_order'], 'structured_content_site_type_status_order_index');
             $table->index(['type', 'slug'], 'structured_content_type_slug_index');
+            $table->unique(['type', 'site_id', 'slug'], 'structured_content_type_site_slug_unique');
         });
     }
 

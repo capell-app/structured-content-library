@@ -26,6 +26,7 @@ class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProv
             ->hasTranslations()
             ->hasMigrations([
                 '2026_05_31_000001_create_structured_content_items_table',
+                '2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table',
             ]);
     }
 
