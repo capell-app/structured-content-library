@@ -32,3 +32,5 @@ Use `BuildStructuredContentSectionsAction::run($sections, $siteId)` when a theme
 Public adapter payloads are filtered before they leave the package boundary: scalar payload fields are emitted as plain text, `url` must be HTTP(S) or a root-relative URL, and `email` must validate as an email address. Themes should still render values with normal Blade escaping unless they are intentionally rendering the already-validated `content` or `summary` portable HTML fields.
 
 When a record is saved as published without an explicit `published_at`, the package stores the current timestamp so ordering and audit trails can distinguish newly published records from drafts.
+
+Slugs are normalized and kept unique within each content type and site scope. If a generated or supplied slug is already used by another active or soft-deleted record, the write actions append a numeric suffix such as `-2` before saving.

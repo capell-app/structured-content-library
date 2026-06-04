@@ -9,6 +9,7 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -78,4 +79,66 @@ it('defaults published_at when publishing without an explicit date', function ()
     ));
 
     expect($item->published_at)->not->toBeNull();
+});
+
+it('uniques generated slugs within the same type and site scope', function (): void {
+    StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Testimonial,
+        'site_id' => null,
+        'title' => 'Customer story',
+        'slug' => 'customer-story',
+    ]);
+
+    $testimonial = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Testimonial,
+        title: 'Customer Story',
+    ));
+
+    $service = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Customer Story',
+    ));
+
+    expect($testimonial->slug)->toBe('customer-story-2')
+        ->and($service->slug)->toBe('customer-story');
+});
+
+it('allows the same slug in a different site scope', function (): void {
+    DB::table('sites')->insert([
+        ['id' => 1],
+        ['id' => 2],
+    ]);
+
+    StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Testimonial,
+        'site_id' => 1,
+        'title' => 'Customer story',
+        'slug' => 'customer-story',
+    ]);
+
+    $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Testimonial,
+        title: 'Customer Story',
+        siteId: 2,
+    ));
+
+    expect($item->slug)->toBe('customer-story');
+});
+
+it('reserves slugs used by soft deleted records', function (): void {
+    $deletedItem = StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Resource,
+        'site_id' => null,
+        'title' => 'Migration checklist',
+        'slug' => 'migration-checklist',
+    ]);
+
+    $deletedItem->delete();
+
+    $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Resource,
+        title: 'Migration checklist',
+    ));
+
+    expect($item->slug)->toBe('migration-checklist-2');
 });

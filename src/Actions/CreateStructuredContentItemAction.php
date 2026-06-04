@@ -8,7 +8,6 @@ use Capell\StructuredContentLibrary\Data\StructuredContentItemData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -28,16 +27,17 @@ class CreateStructuredContentItemAction
 
         $content = EnsurePortableContentHtmlAction::run($data->content);
         $summary = EnsurePortableContentHtmlAction::run($data->summary, 'summary');
-        $slug = $data->slug !== null && trim($data->slug) !== ''
-            ? Str::slug($data->slug)
-            : Str::slug($title);
+        $slugSource = $data->slug !== null && trim($data->slug) !== ''
+            ? $data->slug
+            : $title;
+        $slug = ResolveUniqueStructuredContentSlugAction::run($data->type, $data->siteId, $slugSource);
 
         return DB::transaction(fn (): StructuredContentItem => StructuredContentItem::query()->create([
             'site_id' => $data->siteId,
             'type' => $data->type,
             'status' => $data->status,
             'title' => $title,
-            'slug' => $slug !== '' ? $slug : null,
+            'slug' => $slug,
             'summary' => $summary !== '' ? $summary : null,
             'content' => $content,
             'payload' => $data->payload,

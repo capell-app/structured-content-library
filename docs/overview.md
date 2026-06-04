@@ -16,6 +16,8 @@ Payload values in public DTOs are filtered at the package boundary. Text-like pa
 
 `ImportStructuredContentItemsAction` gives demo kits, themes, and migration tools a package-owned importer for moving existing reusable content into this table. Imports reuse the create/update action boundaries, so portable HTML validation and slug normalization stay consistent.
 
+Create and update writes also resolve slug collisions before persistence. Slug uniqueness is scoped to the content type and site, includes soft-deleted records so restores remain predictable, and appends numeric suffixes when a title or supplied slug is already taken.
+
 ## Content Safety
 
 Database content must stay portable across themes. The create and update actions accept simple semantic HTML in `content` and `summary`, and reject designed markup such as classes, styles, IDs, data attributes, inline handlers, and non-semantic wrapper tags.

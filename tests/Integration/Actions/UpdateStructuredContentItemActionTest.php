@@ -77,3 +77,42 @@ it('rejects unsafe summary markup during updates', function (): void {
 
     $this->fail('Unsafe summary markup was stored.');
 });
+
+it('uniques slugs when an update collides with another item in the same type and site scope', function (): void {
+    StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service,
+        'site_id' => null,
+        'title' => 'Strategy',
+        'slug' => 'strategy',
+    ]);
+
+    $item = StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service,
+        'site_id' => null,
+        'title' => 'Planning',
+        'slug' => 'planning',
+    ]);
+
+    $updated = UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Strategy',
+    ));
+
+    expect($updated->slug)->toBe('strategy-2');
+});
+
+it('keeps an existing slug when updating the owning item', function (): void {
+    $item = StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service,
+        'site_id' => null,
+        'title' => 'Strategy',
+        'slug' => 'strategy',
+    ]);
+
+    $updated = UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Strategy',
+    ));
+
+    expect($updated->slug)->toBe('strategy');
+});
