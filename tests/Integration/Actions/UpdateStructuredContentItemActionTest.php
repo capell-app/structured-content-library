@@ -55,3 +55,25 @@ it('rejects designed markup during updates', function (): void {
         content: '<section class="grid gap-4"><p>Designed markup.</p></section>',
     )))->toThrow(ValidationException::class);
 });
+
+it('rejects unsafe summary markup during updates', function (): void {
+    $item = StructuredContentItem::factory()->create([
+        'summary' => 'Safe summary.',
+    ]);
+
+    try {
+        UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
+            type: StructuredContentType::Service,
+            title: 'Unsafe summary',
+            summary: '<p onclick="alert(1)">Unsafe summary.</p>',
+            content: '<p>Portable content.</p>',
+        ));
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('summary')
+            ->and($item->refresh()->summary)->toBe('Safe summary.');
+
+        return;
+    }
+
+    $this->fail('Unsafe summary markup was stored.');
+});

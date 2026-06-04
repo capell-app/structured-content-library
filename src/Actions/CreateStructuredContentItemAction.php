@@ -27,7 +27,7 @@ class CreateStructuredContentItemAction
         }
 
         $content = EnsurePortableContentHtmlAction::run($data->content);
-        $summary = $data->summary !== null ? trim($data->summary) : null;
+        $summary = EnsurePortableContentHtmlAction::run($data->summary, 'summary');
         $slug = $data->slug !== null && trim($data->slug) !== ''
             ? Str::slug($data->slug)
             : Str::slug($title);

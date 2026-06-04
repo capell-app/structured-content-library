@@ -1,6 +1,6 @@
 {
     "name": "capell-app/structured-content-library",
-    "description": "Reusable structured content records for Capell themes and packages.",
+    "description": "Typed, portable content records (testimonials, case studies, team, FAQs, services…) that Capell themes and packages render safely.",
     "keywords": [
         "capell",
         "structured-content",

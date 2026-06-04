@@ -51,3 +51,20 @@ it('rejects designed markup before it can be stored', function (): void {
         content: '<div class="grid gap-6"><p>Theme-shaped markup.</p></div>',
     )))->toThrow(ValidationException::class);
 });
+
+it('rejects unsafe summary markup before it can be stored', function (): void {
+    try {
+        CreateStructuredContentItemAction::run(new StructuredContentItemData(
+            type: StructuredContentType::Service,
+            title: 'Unsafe summary',
+            summary: '<script>alert("xss")</script>',
+            content: '<p>Portable content.</p>',
+        ));
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('summary');
+
+        return;
+    }
+
+    $this->fail('Unsafe summary markup was stored.');
+});
