@@ -60,8 +60,8 @@ it('rejects unsafe summary markup before it can be stored', function (): void {
             summary: '<script>alert("xss")</script>',
             content: '<p>Portable content.</p>',
         ));
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('summary');
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('summary');
 
         return;
     }

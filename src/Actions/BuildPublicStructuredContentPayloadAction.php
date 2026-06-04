@@ -16,7 +16,7 @@ final class BuildPublicStructuredContentPayloadAction
      */
     public function handle(?StructuredContentPayloadData $payload): array
     {
-        if ($payload === null) {
+        if (! $payload instanceof StructuredContentPayloadData) {
             return [];
         }
 

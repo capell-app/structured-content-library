@@ -68,8 +68,8 @@ it('rejects unsafe summary markup during updates', function (): void {
             summary: '<p onclick="alert(1)">Unsafe summary.</p>',
             content: '<p>Portable content.</p>',
         ));
-    } catch (ValidationException $exception) {
-        expect($exception->errors())->toHaveKey('summary')
+    } catch (ValidationException $validationException) {
+        expect($validationException->errors())->toHaveKey('summary')
             ->and($item->refresh()->summary)->toBe('Safe summary.');
 
         return;
