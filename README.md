@@ -34,3 +34,7 @@ Public adapter payloads are filtered before they leave the package boundary: sca
 When a record is saved as published without an explicit `published_at`, the package stores the current timestamp so ordering and audit trails can distinguish newly published records from drafts.
 
 Slugs are normalized and kept unique within each content type and site scope. If a generated or supplied slug is already used by another active or soft-deleted record, the write actions append a numeric suffix such as `-2` before saving.
+
+Marketplace screenshot coverage is declared in `docs/screenshots.json`; the
+three required captures are committed under `docs/screenshots/` and listed in
+`capell.json` with the extension card.

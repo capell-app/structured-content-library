@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">Structured content item list</title>
+  <desc id="desc">Capell admin table for typed reusable content records with type and status badges.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f6f8fb; }
+      .sidebar { fill: #172033; }
+      .panel { fill: #fff; stroke: #d9e0ea; stroke-width: 1; }
+      .header { fill: #f1f5f9; }
+      .title { fill: #0f172a; font-family: Inter, Arial, sans-serif; font-size: 46px; font-weight: 800; }
+      .label { fill: #111827; font-family: Inter, Arial, sans-serif; font-size: 22px; font-weight: 700; }
+      .small { fill: #64748b; font-family: Inter, Arial, sans-serif; font-size: 19px; }
+      .tiny { fill: #64748b; font-family: Inter, Arial, sans-serif; font-size: 17px; }
+      .white { fill: #f8fafc; font-family: Inter, Arial, sans-serif; }
+      .nav { fill: #a7b4c7; font-family: Inter, Arial, sans-serif; font-size: 22px; }
+      .activeNav { fill: #fff; font-family: Inter, Arial, sans-serif; font-size: 22px; font-weight: 700; }
+      .accent { fill: #226f68; }
+      .line { stroke: #e2e8f0; stroke-width: 2; }
+      .chipGreen { fill: #e7f6f3; stroke: #a7d8ce; stroke-width: 1; }
+      .chipAmber { fill: #fff7ed; stroke: #fed7aa; stroke-width: 1; }
+      .chipBlue { fill: #eef2ff; stroke: #c7d2fe; stroke-width: 1; }
+      .greenText { fill: #17655f; font-family: Inter, Arial, sans-serif; font-size: 16px; font-weight: 800; }
+      .amberText { fill: #a34d0a; font-family: Inter, Arial, sans-serif; font-size: 16px; font-weight: 800; }
+      .blueText { fill: #4338ca; font-family: Inter, Arial, sans-serif; font-size: 16px; font-weight: 800; }
+    </style>
+  </defs>
+  <rect class="bg" width="1440" height="900"/>
+  <rect class="sidebar" width="270" height="900"/>
+  <text x="42" y="72" class="white" font-size="30" font-weight="800">Capell Admin</text>
+  <text x="56" y="185" class="nav">Dashboard</text>
+  <rect x="28" y="216" width="214" height="54" rx="8" fill="#25314a"/>
+  <text x="56" y="251" class="activeNav">Structured content</text>
+  <text x="56" y="313" class="nav">Pages</text>
+  <text x="56" y="375" class="nav">Themes</text>
+  <text x="56" y="437" class="nav">Extensions</text>
+
+  <text x="330" y="88" class="title">Structured Content</text>
+  <text x="332" y="128" class="small">Reusable typed records for themes, demos, and packages.</text>
+  <rect x="1110" y="54" width="192" height="56" rx="8" class="accent"/>
+  <text x="1156" y="90" class="white" font-size="22" font-weight="800">New item</text>
+
+  <rect x="330" y="168" width="1030" height="92" rx="8" class="panel"/>
+  <rect x="366" y="194" width="172" height="40" rx="20" class="chipGreen"/>
+  <text x="398" y="220" class="greenText">Published</text>
+  <rect x="560" y="194" width="160" height="40" rx="20" class="chipAmber"/>
+  <text x="598" y="220" class="amberText">Drafts</text>
+  <rect x="742" y="194" width="194" height="40" rx="20" class="chipBlue"/>
+  <text x="772" y="220" class="blueText">Testimonials</text>
+  <rect x="958" y="194" width="182" height="40" rx="20" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="1000" y="220" class="tiny">Search title</text>
+
+  <rect x="330" y="294" width="1030" height="504" rx="8" class="panel"/>
+  <rect x="330" y="294" width="1030" height="66" rx="8" class="header"/>
+  <text x="366" y="336" class="label">Title</text>
+  <text x="620" y="336" class="label">Type</text>
+  <text x="806" y="336" class="label">Status</text>
+  <text x="994" y="336" class="label">Summary</text>
+  <line x1="330" y1="360" x2="1360" y2="360" class="line"/>
+
+  <text x="366" y="416" class="label">Acme redesign win</text>
+  <text x="366" y="445" class="tiny">acme-redesign-win</text>
+  <rect x="620" y="393" width="126" height="36" rx="18" class="chipBlue"/>
+  <text x="646" y="417" class="blueText">Case study</text>
+  <rect x="806" y="393" width="124" height="36" rx="18" class="chipGreen"/>
+  <text x="832" y="417" class="greenText">Published</text>
+  <text x="994" y="416" class="small">Reusable proof for agency pages</text>
+  <line x1="330" y1="474" x2="1360" y2="474" class="line"/>
+
+  <text x="366" y="530" class="label">Sarah Patel quote</text>
+  <text x="366" y="559" class="tiny">sarah-patel-quote</text>
+  <rect x="620" y="507" width="138" height="36" rx="18" class="chipAmber"/>
+  <text x="646" y="531" class="amberText">Testimonial</text>
+  <rect x="806" y="507" width="124" height="36" rx="18" class="chipGreen"/>
+  <text x="832" y="531" class="greenText">Published</text>
+  <text x="994" y="530" class="small">Customer quote with role metadata</text>
+  <line x1="330" y1="588" x2="1360" y2="588" class="line"/>
+
+  <text x="366" y="644" class="label">Implementation FAQ</text>
+  <text x="366" y="673" class="tiny">implementation-faq</text>
+  <rect x="620" y="621" width="90" height="36" rx="18" class="chipGreen"/>
+  <text x="646" y="645" class="greenText">FAQ</text>
+  <rect x="806" y="621" width="92" height="36" rx="18" class="chipAmber"/>
+  <text x="832" y="645" class="amberText">Draft</text>
+  <text x="994" y="644" class="small">Portable questions for theme sections</text>
+  <line x1="330" y1="702" x2="1360" y2="702" class="line"/>
+
+  <text x="366" y="758" class="label">London office</text>
+  <text x="366" y="787" class="tiny">london-office</text>
+  <rect x="620" y="735" width="116" height="36" rx="18" class="chipBlue"/>
+  <text x="646" y="759" class="blueText">Location</text>
+  <rect x="806" y="735" width="124" height="36" rx="18" class="chipGreen"/>
+  <text x="832" y="759" class="greenText">Published</text>
+  <text x="994" y="758" class="small">Address and contact payload</text>
+</svg>

@@ -57,6 +57,43 @@ it('declares provider classes and package metadata', function (): void {
         ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
 });
 
+it('declares the built marketplace screenshot contract', function (): void {
+    /** @var array{marketplace: array{screenshots: list<array{path: string}>}} $manifest */
+    $manifest = json_decode(
+        (string) File::get(__DIR__ . '/../../../capell.json'),
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+
+    /** @var array{entries: list<array{id: string, screenshotPath: string}>} $contract */
+    $contract = json_decode(
+        (string) File::get(__DIR__ . '/../../../docs/screenshots.json'),
+        associative: true,
+        flags: JSON_THROW_ON_ERROR,
+    );
+
+    $manifestPaths = collect($manifest['marketplace']['screenshots'])
+        ->pluck('path')
+        ->all();
+
+    expect($manifestPaths)->toBe([
+        'docs/assets/marketplace/extension-card.jpg',
+        'docs/screenshots/structured-content-list.png',
+        'docs/screenshots/structured-content-form.png',
+        'docs/screenshots/structured-content-theme-rendering.png',
+    ]);
+
+    foreach ($manifestPaths as $path) {
+        expect(File::exists(__DIR__ . '/../../../' . $path))->toBeTrue();
+    }
+
+    expect(collect($contract['entries'])->pluck('id')->all())->toBe([
+        'structured-content-list',
+        'structured-content-form',
+        'structured-content-theme-rendering',
+    ]);
+});
+
 it('declares all first-class reusable content concepts', function (): void {
     expect(array_map(
         static fn (StructuredContentType $type): string => $type->value,

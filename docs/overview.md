@@ -29,3 +29,11 @@ Admin/editor UI, signed URLs, selectors, package names, and frontend authoring i
 Owning theme and content-section packages should consume `BuildStructuredContentSectionsAction` instead of storing demo-shaped business content. This package owns the reusable records, public-safe DTOs, and section adapter payload shape; themes remain responsible for their rendered presentation.
 
 Package-specific import commands can wrap `ImportStructuredContentItemsAction` when a theme or demo package has enough known content to migrate automatically.
+
+## Screenshot Coverage
+
+`docs/screenshots.json` now declares the three required marketplace captures:
+the admin item list, the create form with typed payload fields, and a
+theme-rendered section consuming published structured content. All three
+1440x900 PNGs are committed under `docs/screenshots/` and listed in
+`capell.json` marketplace media with the extension card.
