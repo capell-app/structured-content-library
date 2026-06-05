@@ -67,8 +67,6 @@
     "capabilities": [
         "structured-content-library",
         "structured-content-public-adapter",
-        "structured-content-section-adapter",
-        "structured-content-theme-adapter",
         "structured-content-import"
     ],
     "performance": {
@@ -116,6 +114,9 @@
         "categories": ["foundation", "shared", "content"]
     },
     "contributionTraceability": {
-        "deferredContributions": []
+        "deferredContributions": [
+            "content-section-adapter",
+            "theme-adapter"
+        ]
     }
 }

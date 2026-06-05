@@ -39,12 +39,18 @@ it('declares provider classes and package metadata', function (): void {
             'class' => StructuredContentModelsContribution::class,
         ])
         ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('admin-resource')
-        ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('content-section-adapter')
-        ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('theme-adapter')
-        ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([])
+        ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([
+            'content-section-adapter',
+            'theme-adapter',
+        ])
         ->and($manifest['actions']['buildStructuredContentSections'])
         ->toBe(BuildStructuredContentSectionsAction::class)
         ->and($manifest['capabilities'])->toContain(
+            'structured-content-library',
+            'structured-content-public-adapter',
+            'structured-content-import',
+        )
+        ->and($manifest['capabilities'])->not->toContain(
             'structured-content-section-adapter',
             'structured-content-theme-adapter',
         )
