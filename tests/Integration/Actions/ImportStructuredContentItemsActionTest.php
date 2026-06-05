@@ -93,3 +93,24 @@ it('deduplicates imports by generated slug when no slug is supplied', function (
         ->and(StructuredContentItem::query()->count())->toBe(1)
         ->and(StructuredContentItem::query()->first()?->summary)->toBe('Updated summary');
 });
+
+it('can skip existing structured content records by generated slug when no slug is supplied', function (): void {
+    StructuredContentItem::factory()->type(StructuredContentType::Service)->create([
+        'slug' => 'strategy-consulting',
+        'title' => 'Strategy Consulting',
+    ]);
+
+    $result = ImportStructuredContentItemsAction::run([
+        [
+            'type' => StructuredContentType::Service,
+            'title' => 'Strategy Consulting',
+            'summary' => 'Skipped summary',
+        ],
+    ], updateExisting: false);
+
+    expect($result->created)->toBe(0)
+        ->and($result->updated)->toBe(0)
+        ->and($result->skipped)->toBe(1)
+        ->and(StructuredContentItem::query()->count())->toBe(1)
+        ->and(StructuredContentItem::query()->first()?->summary)->not->toBe('Skipped summary');
+});
