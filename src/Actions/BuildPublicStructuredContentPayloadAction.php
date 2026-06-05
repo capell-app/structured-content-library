@@ -43,11 +43,12 @@ final class BuildPublicStructuredContentPayloadAction
 
     private function plainText(string $value): ?string
     {
+        $decodedValue = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $withoutDangerousBlocks = preg_replace(
             '/<\s*(script|style|iframe|object|embed)[^>]*>.*?<\s*\/\s*\1\s*>/is',
             '',
-            $value,
-        ) ?? $value;
+            $decodedValue,
+        ) ?? $decodedValue;
 
         $plainText = trim(strip_tags($withoutDangerousBlocks));
 

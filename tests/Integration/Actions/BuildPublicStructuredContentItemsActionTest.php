@@ -7,6 +7,7 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -113,6 +114,41 @@ it('sanitizes public payload output for theme adapters', function (): void {
         ])
         ->and($items[0]->payload)->not->toHaveKey('url')
         ->and($items[0]->payload)->not->toHaveKey('email');
+});
+
+it('prevents raw and encoded payload html from rendering as executable public markup', function (): void {
+    StructuredContentItem::factory()->published()->type(StructuredContentType::Testimonial)->create([
+        'title' => 'Unsafe rendered payload',
+        'payload' => [
+            'quote' => '&lt;script&gt;alert("encoded")&lt;/script&gt;<strong>Safe quote</strong>',
+            'company' => '&lt;img src=x onerror=alert(1)&gt;Example Ltd',
+            'url' => 'javascript:alert(1)',
+        ],
+    ]);
+
+    $items = BuildPublicStructuredContentItemsAction::run(StructuredContentType::Testimonial);
+    $publicPayload = $items[0]->payload;
+    $serializedPayload = json_encode($publicPayload, JSON_THROW_ON_ERROR);
+    $renderedPayload = Blade::render(
+        '{!! $payload["quote"] !!}{!! $payload["company"] !!}<a href="{!! $payload["url"] ?? "#" !!}">Link</a>',
+        ['payload' => $publicPayload],
+    );
+
+    expect($publicPayload)->toMatchArray([
+        'quote' => 'Safe quote',
+        'company' => 'Example Ltd',
+    ])
+        ->and($publicPayload)->not->toHaveKey('url')
+        ->and($serializedPayload)->not->toContain('<script')
+        ->and($serializedPayload)->not->toContain('&lt;script')
+        ->and($serializedPayload)->not->toContain('onerror')
+        ->and($renderedPayload)->toContain('Safe quote')
+        ->and($renderedPayload)->toContain('Example Ltd')
+        ->and($renderedPayload)->not->toContain('<script')
+        ->and($renderedPayload)->not->toContain('&lt;script')
+        ->and($renderedPayload)->not->toContain('<img')
+        ->and($renderedPayload)->not->toContain('onerror')
+        ->and($renderedPayload)->not->toContain('javascript:');
 });
 
 it('keeps public http and relative payload urls', function (): void {
