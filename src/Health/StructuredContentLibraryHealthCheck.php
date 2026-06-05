@@ -49,14 +49,14 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
         $tableExists = $this->hasStorageTable();
 
         return new DoctorCheckResultData(
-            label: 'Structured Content Library storage table',
+            label: (string) __('capell-structured-content-library::health.storage_table_label'),
             passed: $tableExists,
             message: $tableExists
-                ? 'The structured_content_items table is present.'
-                : 'The structured_content_items table is missing.',
+                ? (string) __('capell-structured-content-library::health.storage_table_passed')
+                : (string) __('capell-structured-content-library::health.storage_table_failed'),
             remediation: $tableExists
                 ? null
-                : 'Run the Capell migrations to create the structured content library table.',
+                : (string) __('capell-structured-content-library::health.storage_table_remediation'),
         );
     }
 
@@ -65,14 +65,14 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
         $modelRegistered = $this->hasModelRegistered();
 
         return new DoctorCheckResultData(
-            label: 'Structured Content Library model registry',
+            label: (string) __('capell-structured-content-library::health.model_registry_label'),
             passed: $modelRegistered,
             message: $modelRegistered
-                ? 'StructuredContentItem is registered with Capell Core.'
-                : 'StructuredContentItem is not registered with Capell Core.',
+                ? (string) __('capell-structured-content-library::health.model_registry_passed')
+                : (string) __('capell-structured-content-library::health.model_registry_failed'),
             remediation: $modelRegistered
                 ? null
-                : 'Ensure StructuredContentLibraryServiceProvider registers the structured content model.',
+                : (string) __('capell-structured-content-library::health.model_registry_remediation'),
         );
     }
 
@@ -81,14 +81,14 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
         $tableProtected = $this->hasProtectedTable();
 
         return new DoctorCheckResultData(
-            label: 'Structured Content Library protected table',
+            label: (string) __('capell-structured-content-library::health.protected_table_label'),
             passed: $tableProtected,
             message: $tableProtected
-                ? 'The structured_content_items table is registered as protected.'
-                : 'The structured_content_items table is not registered as protected.',
+                ? (string) __('capell-structured-content-library::health.protected_table_passed')
+                : (string) __('capell-structured-content-library::health.protected_table_failed'),
             remediation: $tableProtected
                 ? null
-                : 'Ensure StructuredContentLibraryServiceProvider registers structured_content_items as a protected table.',
+                : (string) __('capell-structured-content-library::health.protected_table_remediation'),
         );
     }
 
@@ -97,14 +97,14 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
         $resourceRegistered = $this->hasAdminResource();
 
         return new DoctorCheckResultData(
-            label: 'Structured Content Library admin resource',
+            label: (string) __('capell-structured-content-library::health.admin_resource_label'),
             passed: $resourceRegistered,
             message: $resourceRegistered
-                ? 'The structured content item admin resource is registered.'
-                : 'The structured content item admin resource is not registered.',
+                ? (string) __('capell-structured-content-library::health.admin_resource_passed')
+                : (string) __('capell-structured-content-library::health.admin_resource_failed'),
             remediation: $resourceRegistered
                 ? null
-                : 'Ensure StructuredContentLibraryServiceProvider contributes the admin resource.',
+                : (string) __('capell-structured-content-library::health.admin_resource_remediation'),
         );
     }
 
