@@ -22,7 +22,7 @@ it('creates a structured content item from typed data', function (): void {
         title: '  Customer story  ',
         status: StructuredContentStatus::Published,
         slug: 'Customer Story!',
-        summary: '  A concise portable summary.  ',
+        summary: '  <p>A <strong>concise</strong> portable summary.</p>  ',
         content: ' <p>Portable <strong>semantic</strong> content.</p> ',
         payload: new StructuredContentPayloadData(
             quote: 'Capell made our editing workflow simpler.',
@@ -38,7 +38,7 @@ it('creates a structured content item from typed data', function (): void {
         ->and($item->status)->toBe(StructuredContentStatus::Published)
         ->and($item->title)->toBe('Customer story')
         ->and($item->slug)->toBe('customer-story')
-        ->and($item->summary)->toBe('A concise portable summary.')
+        ->and($item->summary)->toBe('<p>A <strong>concise</strong> portable summary.</p>')
         ->and($item->content)->toBe('<p>Portable <strong>semantic</strong> content.</p>')
         ->and($item->payload)->toBeInstanceOf(StructuredContentPayloadData::class)
         ->and($item->payload?->company)->toBe('Example Ltd')
@@ -53,12 +53,12 @@ it('rejects designed markup before it can be stored', function (): void {
     )))->toThrow(ValidationException::class);
 });
 
-it('rejects unsafe summary markup before it can be stored', function (): void {
+it('rejects unsafe summary markup before it can be stored', function (string $summary): void {
     try {
         CreateStructuredContentItemAction::run(new StructuredContentItemData(
             type: StructuredContentType::Service,
             title: 'Unsafe summary',
-            summary: '<script>alert("xss")</script>',
+            summary: $summary,
             content: '<p>Portable content.</p>',
         ));
     } catch (ValidationException $validationException) {
@@ -68,7 +68,10 @@ it('rejects unsafe summary markup before it can be stored', function (): void {
     }
 
     $this->fail('Unsafe summary markup was stored.');
-});
+})->with([
+    'script tag' => ['<script>alert("xss")</script>'],
+    'inline event handler' => ['<p onclick="alert(1)">Unsafe summary.</p>'],
+]);
 
 it('defaults published_at when publishing without an explicit date', function (): void {
     $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(

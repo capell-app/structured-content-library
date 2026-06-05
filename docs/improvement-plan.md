@@ -8,13 +8,13 @@ Structured Content Library provides one package-owned Eloquent model (`Structure
 
 ## 2. Improvements (existing functionality)
 
-- **Sanitize `summary` through the portable-HTML guard (or document it as plain-text).** `EnsurePortableContentHtmlAction::run()` is applied only to `content` in both write actions; `summary` is merely `trim()`-ed and stored raw. Themes render `summary` (the BuildPublic DTO exposes it), so any markup/script entered there bypasses the portability contract. Either pass `summary` through `EnsurePortableContentHtmlAction` or strip tags. — public-output safety + contract consistency — `src/Actions/CreateStructuredContentItemAction.php`, `src/Actions/UpdateStructuredContentItemAction.php`, `src/Actions/EnsurePortableContentHtmlAction.php` — **S**
-
 - **Add a unique index on `(type, site_id, slug)`.** Import dedup (`existingItem()`) queries exactly this tuple, but the migration declares only plain `index()`es (`structured_content_type_slug_index`, no unique). Concurrent imports or admin saves can create duplicate slugs that silently break dedup. — data integrity — `database/migrations/2026_05_31_000001_create_structured_content_items_table.php`, `src/Actions/ImportStructuredContentItemsAction.php` — **S**
 
 - **Implement the health check (it is a stub).** `StructuredContentLibraryHealthCheck` only returns `compatibleCapellApiVersion()` and runs zero assertions, yet `capell.json` marks it `severity: critical` with a label promising "surfaces, providers, and install health are discoverable." Add a real probe (table exists, model registered in `CapellCore::getModels()`, resource contributed, protected table registered). — manifest/behaviour mismatch, diagnostics value — `src/Health/StructuredContentLibraryHealthCheck.php`, `capell.json` (`healthChecks`) — **S**
 
 - **Done/Shipped: Auto-derive `published_at` when publishing without a date.** Create defaults `published_at` for new published records, and update now defaults to `now()` only when transitioning to `Published` with no supplied date while preserving existing timestamps on published and non-publish updates. Evidence: `UpdateStructuredContentItemActionTest` covers the publish transition, preserving an existing timestamp, and no timestamp change for non-publish transitions. — correctness/UX — `src/Actions/CreateStructuredContentItemAction.php`, `src/Actions/UpdateStructuredContentItemAction.php` — **S**
+
+- **Done/Shipped: Sanitize `summary` through the portable-HTML guard.** Create and update actions now pass `summary` through `EnsurePortableContentHtmlAction` with field-specific validation errors, matching the `content` portability contract before values reach public DTOs. Evidence: `CreateStructuredContentItemActionTest` and `UpdateStructuredContentItemActionTest` persist safe portable summary HTML and reject script tags plus inline event handlers without storing unsafe values. — public-output safety + contract consistency — `src/Actions/CreateStructuredContentItemAction.php`, `src/Actions/UpdateStructuredContentItemAction.php`, `src/Actions/EnsurePortableContentHtmlAction.php` — **S**
 
 - **Make the `payload` form fields type-aware.** The Filament form renders all 19 payload fields unconditionally for every type, so editing a "Logo" shows `quote`, `question`, `postal_code`, etc. Use `Get $get('type')` + `->visible()` to scope payload fields per content type. — admin UX, reduces data-entry error — `src/Filament/Resources/StructuredContentItems/StructuredContentItemResource.php` — **M**
 
@@ -50,8 +50,6 @@ Manifest `capabilities[]`: `structured-content-library`, `structured-content-pub
 
 ## 4. Issues / Risks
 
-- **`summary` not run through the portable-HTML guard (public-output safety).** See §2. Raw markup in `summary` reaches `PublicStructuredContentItemData` and is theme-rendered. — `src/Actions/CreateStructuredContentItemAction.php`, `src/Actions/UpdateStructuredContentItemAction.php`
-
 - **`payload` is exposed publicly as an unsanitised raw array.** `BuildPublicStructuredContentItemsAction` emits `payload: $item->payload?->toArray()` with no escaping/whitelisting. `EnsurePortableContentHtmlAction` never touches payload values, so `quote`, `answer`, `subtitle`, `url`, etc. pass through verbatim. If a theme echoes payload fields without `{{ }}` escaping, this is an XSS vector. Public-safety responsibility is silently delegated to every theme. — `src/Actions/BuildPublicStructuredContentItemsAction.php`
 
 - **Stub health check marked `critical`.** Diagnostics will report this package "healthy" regardless of actual state (missing table, unregistered model). False-green. — `src/Health/StructuredContentLibraryHealthCheck.php`
@@ -62,7 +60,7 @@ Manifest `capabilities[]`: `structured-content-library`, `structured-content-pub
 
 - **Performance budget vs. reality.** Manifest `adminQueryBudget: 20`, `frontendRenderBudgetMs: 10`. `BuildStructuredContentSectionsAction` issues one query per section (calls `BuildPublic` → `List` → `->get()` in a loop), so an N-section theme page = N queries with no eager batching or cache. No test or benchmark asserts the budget. — `src/Actions/BuildStructuredContentSectionsAction.php`, `capell.json`
 
-- **Test gaps.** 18 tests exist (6 unit, 12 integration). Covered: data mapping, enum labels, provider/manifest declarations, resource page wiring, CRUD actions, portable-HTML rejection (create + update), list ordering/site filtering, build-public + limit, build-sections, import create/update/skip, model casts/table install. **Not covered:** the Filament pages' `handleRecordCreation`/`handleRecordUpdate` Action delegation (no Livewire form test → admin save path untested end-to-end); `summary` sanitization (because none exists); `archived()`/`draft()` scopes; soft-delete visibility behaviour; payload XSS/escaping assertions; `published_at`-in-future exclusion edge; import with null slug. No arch test asserting public-DTO field whitelist. — `tests/`
+- **Test gaps.** 39 package tests pass in the current structured-content-library slice. Covered: data mapping, enum labels, provider/manifest declarations, resource page wiring, CRUD actions, portable-HTML rejection (create + update), summary portable-HTML validation, list ordering/site filtering, build-public + limit, build-sections, import create/update/skip, model casts/table install. **Not covered:** the Filament pages' `handleRecordCreation`/`handleRecordUpdate` Action delegation (no Livewire form test → admin save path untested end-to-end); `archived()`/`draft()` scopes; soft-delete visibility behaviour; payload XSS/escaping assertions; `published_at`-in-future exclusion edge; import with null slug. No arch test asserting public-DTO field whitelist. — `tests/`
 
 - **`payload` form fields use `dehydrated` defaults implicitly.** All payload sub-fields are always-present `TextInput`/`Textarea`; an empty payload still serialises 19 null keys into `StructuredContentPayloadData`. Harmless but bloats stored JSON and public output. — `src/Filament/Resources/.../StructuredContentItemResource.php`
 
@@ -88,7 +86,7 @@ This is a **free / foundation / bundled** package (`product.tier: free`, `bundle
 
 | Item                                                                      | Bucket | Effort | Impact                      | Section ref |
 | ------------------------------------------------------------------------- | ------ | ------ | --------------------------- | ----------- |
-| Sanitize `summary` via portable-HTML guard                                | Now    | S      | High (public safety)        | §2, §4      |
+| Done/Shipped: Sanitize `summary` via portable-HTML guard. Evidence: `CreateStructuredContentItemActionTest` and `UpdateStructuredContentItemActionTest` persist safe portable summary HTML and reject script tags plus inline event handlers. | Done | S | High (public safety) | §2 |
 | Implement real health check (drop stub)                                   | Now    | S      | High (false-green critical) | §2, §4      |
 | Add unique index on `(type, site_id, slug)` + fix null-slug import dedup  | Now    | S      | High (data integrity)       | §2, §4      |
 | Done/Shipped: Wire section/theme adapter OR mark capabilities deferred. Evidence: `capell.json` removes unwired adapter capabilities, marks adapter contributions deferred, and `StructuredContentLibraryProviderTest` asserts the truthful manifest contract. | Done | M | High (manifest honesty) | §3 |

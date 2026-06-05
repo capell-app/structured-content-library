@@ -29,7 +29,7 @@ it('updates a structured content item through typed data', function (): void {
         title: '  Updated title  ',
         status: StructuredContentStatus::Published,
         slug: 'Updated Title!',
-        summary: '  Updated summary.  ',
+        summary: '  <p>Updated <em>portable</em> summary.</p>  ',
         content: '<p>Portable updated content.</p>',
         payload: new StructuredContentPayloadData(question: 'Can this be edited?', answer: 'Yes.'),
         publishedAt: now()->subMinute(),
@@ -40,7 +40,7 @@ it('updates a structured content item through typed data', function (): void {
         ->and($updated->status)->toBe(StructuredContentStatus::Published)
         ->and($updated->title)->toBe('Updated title')
         ->and($updated->slug)->toBe('updated-title')
-        ->and($updated->summary)->toBe('Updated summary.')
+        ->and($updated->summary)->toBe('<p>Updated <em>portable</em> summary.</p>')
         ->and($updated->content)->toBe('<p>Portable updated content.</p>')
         ->and($updated->payload)->toBeInstanceOf(StructuredContentPayloadData::class)
         ->and($updated->payload?->question)->toBe('Can this be edited?')
@@ -57,7 +57,7 @@ it('rejects designed markup during updates', function (): void {
     )))->toThrow(ValidationException::class);
 });
 
-it('rejects unsafe summary markup during updates', function (): void {
+it('rejects unsafe summary markup during updates', function (string $summary): void {
     $item = StructuredContentItem::factory()->create([
         'summary' => 'Safe summary.',
     ]);
@@ -66,7 +66,7 @@ it('rejects unsafe summary markup during updates', function (): void {
         UpdateStructuredContentItemAction::run($item, new StructuredContentItemData(
             type: StructuredContentType::Service,
             title: 'Unsafe summary',
-            summary: '<p onclick="alert(1)">Unsafe summary.</p>',
+            summary: $summary,
             content: '<p>Portable content.</p>',
         ));
     } catch (ValidationException $validationException) {
@@ -77,7 +77,10 @@ it('rejects unsafe summary markup during updates', function (): void {
     }
 
     $this->fail('Unsafe summary markup was stored.');
-});
+})->with([
+    'script tag' => ['<script>alert("xss")</script>'],
+    'inline event handler' => ['<p onclick="alert(1)">Unsafe summary.</p>'],
+]);
 
 it('uniques slugs when an update collides with another item in the same type and site scope', function (): void {
     StructuredContentItem::factory()->create([
