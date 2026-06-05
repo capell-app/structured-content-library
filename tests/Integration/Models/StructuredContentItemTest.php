@@ -7,7 +7,6 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -90,10 +89,11 @@ it('deduplicates legacy scoped slugs before adding the unique index', function (
         ],
     ]);
 
-    /** @var Migration $migration */
     $migration = require dirname(__DIR__, 3) . '/database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php';
 
-    $migration->up();
+    throw_unless(is_object($migration) && method_exists($migration, 'up'), RuntimeException::class, 'Expected migration object with an up method.');
+
+    call_user_func([$migration, 'up']);
 
     $siteScopedSlugs = DB::table('structured_content_items')
         ->where('site_id', $siteId)

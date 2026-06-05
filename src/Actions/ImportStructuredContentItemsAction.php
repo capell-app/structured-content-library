@@ -10,6 +10,9 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Str;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static StructuredContentImportResultData run(iterable<int, array<string, mixed>|StructuredContentItemData> $items, bool $updateExisting = true)
+ */
 final class ImportStructuredContentItemsAction
 {
     use AsObject;

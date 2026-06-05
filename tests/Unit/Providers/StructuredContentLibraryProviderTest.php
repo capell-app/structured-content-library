@@ -19,38 +19,34 @@ require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 uses(StructuredContentLibraryTestCase::class);
 
 it('declares provider classes and package metadata', function (): void {
-    $manifest = json_decode(
-        (string) File::get(__DIR__ . '/../../../capell.json'),
-        associative: true,
-        flags: JSON_THROW_ON_ERROR,
-    );
+    $manifest = capell_json_file_array(__DIR__ . '/../../../capell.json');
 
     expect(StructuredContentLibraryServiceProvider::class)->toExtend(AbstractPackageServiceProvider::class)
         ->and(StructuredContentLibraryServiceProvider::$name)->toBe('capell-structured-content-library')
         ->and(StructuredContentLibraryServiceProvider::$packageName)->toBe('capell-app/structured-content-library')
         ->and($manifest['name'])->toBe('capell-app/structured-content-library')
-        ->and($manifest['providers']['runtime'])->toBe([StructuredContentLibraryServiceProvider::class])
-        ->and($manifest['providers']['admin'])->toBe([StructuredContentLibraryServiceProvider::class])
-        ->and($manifest['contributes'][0]['type'])->toBe('admin-resource')
-        ->and($manifest['contributes'][0]['class'])->toBe(StructuredContentItemResourceContribution::class)
-        ->and($manifest['contributes'][0]['resourceClass'])->toBe(StructuredContentItemResource::class)
-        ->and($manifest['contributes'])->toContain([
+        ->and(data_get($manifest, 'providers.runtime'))->toBe([StructuredContentLibraryServiceProvider::class])
+        ->and(data_get($manifest, 'providers.admin'))->toBe([StructuredContentLibraryServiceProvider::class])
+        ->and(data_get($manifest, 'contributes.0.type'))->toBe('admin-resource')
+        ->and(data_get($manifest, 'contributes.0.class'))->toBe(StructuredContentItemResourceContribution::class)
+        ->and(data_get($manifest, 'contributes.0.resourceClass'))->toBe(StructuredContentItemResource::class)
+        ->and(data_get($manifest, 'contributes'))->toContain([
             'type' => 'model',
             'class' => StructuredContentModelsContribution::class,
         ])
-        ->and($manifest['contributionTraceability']['deferredContributions'])->not->toContain('admin-resource')
-        ->and($manifest['contributionTraceability']['deferredContributions'])->toBe([
+        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->not->toContain('admin-resource')
+        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->toBe([
             'content-section-adapter',
             'theme-adapter',
         ])
-        ->and($manifest['actions']['buildStructuredContentSections'])
+        ->and(data_get($manifest, 'actions.buildStructuredContentSections'))
         ->toBe(BuildStructuredContentSectionsAction::class)
-        ->and($manifest['capabilities'])->toContain(
+        ->and(data_get($manifest, 'capabilities'))->toContain(
             'structured-content-library',
             'structured-content-public-adapter',
             'structured-content-import',
         )
-        ->and($manifest['capabilities'])->not->toContain(
+        ->and(data_get($manifest, 'capabilities'))->not->toContain(
             'structured-content-section-adapter',
             'structured-content-theme-adapter',
         )
@@ -58,21 +54,15 @@ it('declares provider classes and package metadata', function (): void {
 });
 
 it('declares the built marketplace screenshot contract', function (): void {
-    /** @var array{marketplace: array{screenshots: list<array{path: string}>}} $manifest */
-    $manifest = json_decode(
-        (string) File::get(__DIR__ . '/../../../capell.json'),
-        associative: true,
-        flags: JSON_THROW_ON_ERROR,
-    );
+    $manifest = capell_json_file_array(__DIR__ . '/../../../capell.json');
+    $contract = capell_json_file_array(__DIR__ . '/../../../docs/screenshots.json');
+    $screenshots = data_get($manifest, 'marketplace.screenshots', []);
+    $entries = $contract['entries'] ?? [];
 
-    /** @var array{entries: list<array{id: string, screenshotPath: string}>} $contract */
-    $contract = json_decode(
-        (string) File::get(__DIR__ . '/../../../docs/screenshots.json'),
-        associative: true,
-        flags: JSON_THROW_ON_ERROR,
-    );
+    throw_unless(is_array($screenshots), RuntimeException::class, 'Structured Content screenshots must be an array.');
+    throw_unless(is_array($entries), RuntimeException::class, 'Structured Content screenshot contract entries must be an array.');
 
-    $manifestPaths = collect($manifest['marketplace']['screenshots'])
+    $manifestPaths = collect($screenshots)
         ->pluck('path')
         ->all();
 
@@ -84,10 +74,12 @@ it('declares the built marketplace screenshot contract', function (): void {
     ]);
 
     foreach ($manifestPaths as $path) {
+        throw_unless(is_string($path), RuntimeException::class, 'Structured Content screenshot paths must be strings.');
+
         expect(File::exists(__DIR__ . '/../../../' . $path))->toBeTrue();
     }
 
-    expect(collect($contract['entries'])->pluck('id')->all())->toBe([
+    expect(collect($entries)->pluck('id')->all())->toBe([
         'structured-content-list',
         'structured-content-form',
         'structured-content-theme-rendering',

@@ -9,7 +9,7 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Validation\ValidationException;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -122,7 +122,7 @@ it('keeps an existing slug when updating the owning item', function (): void {
 });
 
 it('defaults published_at when transitioning to published without an explicit date', function (): void {
-    Carbon::setTestNow(Carbon::parse('2026-06-05 10:30:00'));
+    Date::setTestNow(Date::parse('2026-06-05 10:30:00'));
 
     try {
         $item = StructuredContentItem::factory()->create([
@@ -139,12 +139,12 @@ it('defaults published_at when transitioning to published without an explicit da
 
         expect($updated->published_at?->toDateTimeString())->toBe('2026-06-05 10:30:00');
     } finally {
-        Carbon::setTestNow();
+        Date::setTestNow();
     }
 });
 
 it('preserves existing published_at when updating a published item without an explicit date', function (): void {
-    $publishedAt = Carbon::parse('2026-05-20 09:15:00');
+    $publishedAt = Date::parse('2026-05-20 09:15:00');
     $item = StructuredContentItem::factory()->published()->create([
         'published_at' => $publishedAt,
     ]);
@@ -160,7 +160,7 @@ it('preserves existing published_at when updating a published item without an ex
 });
 
 it('does not change published_at for non-publish transitions without an explicit date', function (): void {
-    $publishedAt = Carbon::parse('2026-05-20 09:15:00');
+    $publishedAt = Date::parse('2026-05-20 09:15:00');
     $item = StructuredContentItem::factory()->published()->create([
         'published_at' => $publishedAt,
     ]);

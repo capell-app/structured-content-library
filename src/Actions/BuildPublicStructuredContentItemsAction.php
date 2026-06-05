@@ -10,6 +10,9 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Collection;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static list<PublicStructuredContentItemData> run(StructuredContentType $type, ?int $siteId = null, ?int $limit = null)
+ */
 class BuildPublicStructuredContentItemsAction
 {
     use AsObject;

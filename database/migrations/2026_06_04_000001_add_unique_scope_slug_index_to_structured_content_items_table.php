@@ -92,7 +92,7 @@ return new class extends Migration
     {
         $siteId = $item->site_id === null ? 'global' : (string) $item->site_id;
 
-        return (string) $item->type . '|' . $siteId;
+        return $item->type . '|' . $siteId;
     }
 
     /**

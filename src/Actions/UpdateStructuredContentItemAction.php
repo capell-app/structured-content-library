@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static StructuredContentItem run(StructuredContentItem $item, StructuredContentItemData $data)
+ */
 class UpdateStructuredContentItemAction
 {
     use AsObject;
