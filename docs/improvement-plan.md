@@ -8,7 +8,7 @@ Structured Content Library provides one package-owned Eloquent model (`Structure
 
 ## 2. Improvements (existing functionality)
 
-- **Screenshot contract reopened.** `docs/screenshots.json` still declares the admin list, create form, and theme-rendering captures, but the previous mock PNG/SVG assets were removed from `docs/screenshots/` and `capell.json`. Capture these through the Capell screenshot runner with the Structured Content admin resource seeded and a real theme fixture consuming published records before promotion. — positioning — `docs/screenshots.json`, `capell.json` — **S**
+- **Screenshot contract reopened and runner-app install blocked.** `docs/screenshots.json` still declares the admin list, create form, and theme-rendering captures, but the previous mock PNG/SVG assets were removed from `docs/screenshots/` and `capell.json`. The Capell runner dry-run validates the entries, but the prepared screenshot app route list has no Structured Content admin route and the package remains absent from the runner app Composer requirements, so real captures must start by installing `capell-app/structured-content-library` in the runner app or adding another supported install path. After that, seed the Structured Content admin resource and a real theme fixture consuming published records before promotion. — positioning — `docs/screenshots.json`, `capell.json` — **S**
 
 - **Done/Shipped: Add a unique index on `(type, site_id, slug)`.** The package migration now repairs duplicate scoped non-null slugs before creating `structured_content_type_site_slug_unique`, and import coverage proves generated slugs are used for dedup when incoming rows omit `slug`. — data integrity — `database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`, `tests/Integration/Actions/ImportStructuredContentItemsActionTest.php`, `tests/Integration/Models/StructuredContentItemTest.php` — **S**
 
@@ -78,7 +78,7 @@ This is a **free / foundation / bundled** package (`product.tier: free`, `bundle
 
 - **free/bundle vs premium.** Correctly free/foundation — it should be the gravity well that makes premium packages (content-sections, themes, automation) more valuable. Keep the model/Actions free; the _premium_ upsell surface is layered features: revisions, API exposure, custom-type registry, media handling (§3). Do not paywall the core read Actions — that would break the foundation role.
 
-- **Screenshot / media status.** `capell.json` currently lists only the extension card. Required captures remain: (1) the real Filament list table with type/status badges, (2) the create form showing type + payload fields, and (3) a route-backed theme fixture rendering published items to prove the "theme renders the data" story.
+- **Screenshot / media status.** `capell.json` currently lists only the extension card. Required captures remain blocked until the screenshot runner app installs the package: (1) the real Filament list table with type/status badges, (2) the create form showing type + payload fields, and (3) a route-backed theme fixture rendering published items to prove the "theme renders the data" story.
 
 - **Platform-pitch contribution.** Structured/typed content is a top differentiator vs. WordPress (which leans on free-text blocks + plugins for custom types). This package is the credibility anchor for that pitch — but only once **custom content types** (§3) and a **wired section/theme adapter** (§3) exist. Today the pitch is partly aspirational: the adapters are manifest strings, and the type set is fixed.
 
