@@ -32,8 +32,9 @@ Package-specific import commands can wrap `ImportStructuredContentItemsAction` w
 
 ## Screenshot Coverage
 
-`docs/screenshots.json` now declares the three required marketplace captures:
-the admin item list, the create form with typed payload fields, and a
-theme-rendered section consuming published structured content. All three
-1440x900 PNGs are committed under `docs/screenshots/` and listed in
-`capell.json` marketplace media with the extension card.
+`docs/screenshots.json` declares the three required marketplace captures: the
+admin item list, the create form with typed payload fields, and a theme-rendered
+section consuming published structured content. The previous illustrative
+PNG/SVG captures were removed because they were not Capell runner output, so
+`capell.json` currently lists only the extension card until real captures are
+generated.

@@ -109,21 +109,6 @@
                 "path": "docs/assets/marketplace/extension-card.jpg",
                 "alt": "Structured Content Library extension preview image",
                 "caption": "Structured Content Library extension preview"
-            },
-            {
-                "path": "docs/screenshots/structured-content-list.png",
-                "alt": "Structured Content Library admin table with typed reusable records, type badges, status badges, and summaries.",
-                "caption": "Structured content item list"
-            },
-            {
-                "path": "docs/screenshots/structured-content-form.png",
-                "alt": "Structured Content Library create form with type, status, portable summary, and typed payload fields.",
-                "caption": "Structured content create form"
-            },
-            {
-                "path": "docs/screenshots/structured-content-theme-rendering.png",
-                "alt": "Theme page rendering testimonials, case studies, and FAQs from structured content records.",
-                "caption": "Theme rendering reusable records"
             }
         ],
         "categories": ["foundation", "shared", "content"]

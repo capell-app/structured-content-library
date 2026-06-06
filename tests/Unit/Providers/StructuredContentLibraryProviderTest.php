@@ -53,7 +53,7 @@ it('declares provider classes and package metadata', function (): void {
         ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
 });
 
-it('declares the built marketplace screenshot contract', function (): void {
+it('declares the marketplace screenshot contract without promoting mock captures', function (): void {
     $manifest = capell_json_file_array(__DIR__ . '/../../../capell.json');
     $contract = capell_json_file_array(__DIR__ . '/../../../docs/screenshots.json');
     $screenshots = data_get($manifest, 'marketplace.screenshots', []);
@@ -68,9 +68,6 @@ it('declares the built marketplace screenshot contract', function (): void {
 
     expect($manifestPaths)->toBe([
         'docs/assets/marketplace/extension-card.jpg',
-        'docs/screenshots/structured-content-list.png',
-        'docs/screenshots/structured-content-form.png',
-        'docs/screenshots/structured-content-theme-rendering.png',
     ]);
 
     foreach ($manifestPaths as $path) {
