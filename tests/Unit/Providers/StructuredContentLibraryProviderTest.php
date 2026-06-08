@@ -108,3 +108,23 @@ it('registers models and protected tables when installed', function (): void {
     expect(CapellCore::getModels())->toContain(StructuredContentItem::class)
         ->and(CapellCore::getProtectedTables())->toContain('structured_content_items');
 });
+
+it('registers frontend cache invalidation dependencies when the registry is available', function (): void {
+    $registry = new class
+    {
+        /** @var array<class-string, string|array<int, string>> */
+        public array $dependencies = [];
+
+        public function registerDependency(string $modelClass, string|array $cachePatterns): void
+        {
+            $this->dependencies[$modelClass] = $cachePatterns;
+        }
+    };
+
+    app()->instance('Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry', $registry);
+
+    (new StructuredContentLibraryServiceProvider(app()))->packageRegistered();
+
+    expect($registry->dependencies[StructuredContentItem::class] ?? null)
+        ->toBe('structured-content-library-*');
+});

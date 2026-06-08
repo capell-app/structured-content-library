@@ -9,12 +9,16 @@ use Capell\Admin\Facades\CapellAdmin;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
+use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Capell\StructuredContentLibrary\Support\StructuredContentModelRegistrar;
 use Override;
 use Spatie\LaravelPackageTools\Package;
 
 class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProvider
 {
+    private const string FRONTEND_CACHE_INVALIDATION_REGISTRY = 'Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry';
+
     public static string $name = 'capell-structured-content-library';
 
     public static string $packageName = 'capell-app/structured-content-library';
@@ -40,7 +44,9 @@ class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProv
             $this
                 ->registerModels()
                 ->registerProtectedTables()
-                ->registerAdminResources();
+                ->registerAdminResources()
+                ->registerCacheInvalidationDependencies()
+                ->registerStructuredContentCacheEvents();
         });
     }
 
@@ -70,6 +76,44 @@ class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProv
             class: ResourceEnum::StructuredContentItem->value,
             group: ResourceEnum::StructuredContentItem->name,
         ));
+
+        return $this;
+    }
+
+    private function registerCacheInvalidationDependencies(): self
+    {
+        $registryClass = self::FRONTEND_CACHE_INVALIDATION_REGISTRY;
+
+        if (! class_exists($registryClass) || ! $this->app->bound($registryClass)) {
+            return $this;
+        }
+
+        $registry = $this->app->make($registryClass);
+
+        if (is_object($registry) && method_exists($registry, 'registerDependency')) {
+            $registry->registerDependency(StructuredContentItem::class, 'structured-content-library-*');
+        }
+
+        return $this;
+    }
+
+    private function registerStructuredContentCacheEvents(): self
+    {
+        StructuredContentItem::saved(static function (StructuredContentItem $item): void {
+            StructuredContentCache::flush();
+        });
+
+        StructuredContentItem::deleted(static function (StructuredContentItem $item): void {
+            StructuredContentCache::flush();
+        });
+
+        StructuredContentItem::restored(static function (StructuredContentItem $item): void {
+            StructuredContentCache::flush();
+        });
+
+        StructuredContentItem::forceDeleted(static function (StructuredContentItem $item): void {
+            StructuredContentCache::flush();
+        });
 
         return $this;
     }

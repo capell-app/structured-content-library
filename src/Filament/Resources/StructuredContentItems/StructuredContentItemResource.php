@@ -13,6 +13,13 @@ use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pa
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\ListStructuredContentItems;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
@@ -20,10 +27,12 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -82,26 +91,69 @@ class StructuredContentItemResource extends Resource
                 ->columns(2),
             Section::make(__('capell-structured-content-library::admin.section_payload'))
                 ->schema([
-                    TextInput::make('payload.eyebrow')->label(__('capell-structured-content-library::admin.payload_eyebrow')),
-                    TextInput::make('payload.subtitle')->label(__('capell-structured-content-library::admin.payload_subtitle')),
-                    Textarea::make('payload.quote')->label(__('capell-structured-content-library::admin.payload_quote'))->rows(3),
-                    TextInput::make('payload.attribution')->label(__('capell-structured-content-library::admin.payload_attribution')),
-                    TextInput::make('payload.role')->label(__('capell-structured-content-library::admin.payload_role')),
-                    TextInput::make('payload.company')->label(__('capell-structured-content-library::admin.payload_company')),
-                    TextInput::make('payload.question')->label(__('capell-structured-content-library::admin.payload_question')),
-                    Textarea::make('payload.answer')->label(__('capell-structured-content-library::admin.payload_answer'))->rows(3),
-                    TextInput::make('payload.resource_kind')->label(__('capell-structured-content-library::admin.payload_resource_kind')),
-                    TextInput::make('payload.url')->label(__('capell-structured-content-library::admin.payload_url'))->url(),
-                    TextInput::make('payload.email')->label(__('capell-structured-content-library::admin.payload_email'))->email(),
-                    TextInput::make('payload.phone')->label(__('capell-structured-content-library::admin.payload_phone')),
-                    TextInput::make('payload.street_address')->label(__('capell-structured-content-library::admin.payload_street_address')),
-                    TextInput::make('payload.locality')->label(__('capell-structured-content-library::admin.payload_locality')),
-                    TextInput::make('payload.region')->label(__('capell-structured-content-library::admin.payload_region')),
-                    TextInput::make('payload.postal_code')->label(__('capell-structured-content-library::admin.payload_postal_code')),
-                    TextInput::make('payload.country_code')->label(__('capell-structured-content-library::admin.payload_country_code')),
-                    TextInput::make('payload.image_alt')->label(__('capell-structured-content-library::admin.payload_image_alt')),
-                    TextInput::make('payload.logo_alt')->label(__('capell-structured-content-library::admin.payload_logo_alt')),
+                    TextInput::make('payload.eyebrow')
+                        ->label(__('capell-structured-content-library::admin.payload_eyebrow'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'eyebrow')),
+                    TextInput::make('payload.subtitle')
+                        ->label(__('capell-structured-content-library::admin.payload_subtitle'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'subtitle')),
+                    Textarea::make('payload.quote')
+                        ->label(__('capell-structured-content-library::admin.payload_quote'))
+                        ->rows(3)
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'quote')),
+                    TextInput::make('payload.attribution')
+                        ->label(__('capell-structured-content-library::admin.payload_attribution'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'attribution')),
+                    TextInput::make('payload.role')
+                        ->label(__('capell-structured-content-library::admin.payload_role'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'role')),
+                    TextInput::make('payload.company')
+                        ->label(__('capell-structured-content-library::admin.payload_company'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'company')),
+                    TextInput::make('payload.question')
+                        ->label(__('capell-structured-content-library::admin.payload_question'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'question')),
+                    Textarea::make('payload.answer')
+                        ->label(__('capell-structured-content-library::admin.payload_answer'))
+                        ->rows(3)
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'answer')),
+                    TextInput::make('payload.resource_kind')
+                        ->label(__('capell-structured-content-library::admin.payload_resource_kind'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'resource_kind')),
+                    TextInput::make('payload.url')
+                        ->label(__('capell-structured-content-library::admin.payload_url'))
+                        ->url()
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'url')),
+                    TextInput::make('payload.email')
+                        ->label(__('capell-structured-content-library::admin.payload_email'))
+                        ->email()
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'email')),
+                    TextInput::make('payload.phone')
+                        ->label(__('capell-structured-content-library::admin.payload_phone'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'phone')),
+                    TextInput::make('payload.street_address')
+                        ->label(__('capell-structured-content-library::admin.payload_street_address'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'street_address')),
+                    TextInput::make('payload.locality')
+                        ->label(__('capell-structured-content-library::admin.payload_locality'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'locality')),
+                    TextInput::make('payload.region')
+                        ->label(__('capell-structured-content-library::admin.payload_region'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'region')),
+                    TextInput::make('payload.postal_code')
+                        ->label(__('capell-structured-content-library::admin.payload_postal_code'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'postal_code')),
+                    TextInput::make('payload.country_code')
+                        ->label(__('capell-structured-content-library::admin.payload_country_code'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'country_code')),
+                    TextInput::make('payload.image_alt')
+                        ->label(__('capell-structured-content-library::admin.payload_image_alt'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'image_alt')),
+                    TextInput::make('payload.logo_alt')
+                        ->label(__('capell-structured-content-library::admin.payload_logo_alt'))
+                        ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, 'logo_alt')),
                 ])
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->columns(2),
         ]);
     }
@@ -140,7 +192,22 @@ class StructuredContentItemResource extends Resource
                 SelectFilter::make('status')
                     ->label(__('capell-structured-content-library::admin.status'))
                     ->options(self::statusOptions()),
+                TrashedFilter::make(),
             ])
+            ->recordActions([
+                EditAction::make(),
+                ActionGroup::make([
+                    DeleteAction::make(),
+                    RestoreAction::make(),
+                ])
+                    ->color('gray'),
+            ])
+            ->toolbarActions([
+                DeleteBulkAction::make(),
+                RestoreBulkAction::make(),
+                ForceDeleteBulkAction::make(),
+            ])
+            ->reorderable('sort_order')
             ->defaultSort('sort_order');
     }
 
@@ -199,6 +266,73 @@ class StructuredContentItemResource extends Resource
     }
 
     /**
+     * @return list<string>
+     */
+    public static function payloadFieldsForType(StructuredContentType $type): array
+    {
+        return match ($type) {
+            StructuredContentType::CaseStudy => [
+                'eyebrow',
+                'subtitle',
+                'company',
+                'url',
+                'image_alt',
+            ],
+            StructuredContentType::Testimonial => [
+                'quote',
+                'attribution',
+                'role',
+                'company',
+                'image_alt',
+            ],
+            StructuredContentType::TeamMember => [
+                'subtitle',
+                'role',
+                'company',
+                'email',
+                'phone',
+                'url',
+                'image_alt',
+            ],
+            StructuredContentType::Service => [
+                'eyebrow',
+                'subtitle',
+                'url',
+                'image_alt',
+            ],
+            StructuredContentType::Faq => [
+                'question',
+                'answer',
+            ],
+            StructuredContentType::Resource => [
+                'resource_kind',
+                'url',
+                'image_alt',
+            ],
+            StructuredContentType::Partner => [
+                'company',
+                'url',
+                'logo_alt',
+            ],
+            StructuredContentType::Location => [
+                'email',
+                'phone',
+                'street_address',
+                'locality',
+                'region',
+                'postal_code',
+                'country_code',
+                'url',
+            ],
+            StructuredContentType::Logo => [
+                'company',
+                'url',
+                'logo_alt',
+            ],
+        };
+    }
+
+    /**
      * @return array<string, string>
      */
     private static function typeOptions(): array
@@ -224,6 +358,23 @@ class StructuredContentItemResource extends Resource
         }
 
         return $options;
+    }
+
+    private static function isPayloadFieldVisible(Get $get, string $field): bool
+    {
+        $type = self::payloadTypeFromState($get('type'));
+
+        return $type instanceof StructuredContentType
+            && in_array($field, self::payloadFieldsForType($type), true);
+    }
+
+    private static function payloadTypeFromState(mixed $state): ?StructuredContentType
+    {
+        if ($state instanceof StructuredContentType) {
+            return $state;
+        }
+
+        return is_string($state) ? StructuredContentType::tryFrom($state) : null;
     }
 
     private static function formatType(StructuredContentType|string|null $state): string

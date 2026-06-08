@@ -8,6 +8,9 @@ use Capell\StructuredContentLibrary\Actions\UpdateStructuredContentItemAction;
 use Capell\StructuredContentLibrary\Data\StructuredContentItemData;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\StructuredContentItemResource;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Override;
@@ -27,5 +30,15 @@ class EditStructuredContentItem extends EditRecord
         }
 
         return UpdateStructuredContentItemAction::run($record, StructuredContentItemData::from($data));
+    }
+
+    #[Override]
+    protected function getHeaderActions(): array
+    {
+        return [
+            RestoreAction::make(),
+            DeleteAction::make(),
+            ForceDeleteAction::make(),
+        ];
     }
 }

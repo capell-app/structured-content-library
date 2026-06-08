@@ -6,8 +6,6 @@ namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
-use Capell\StructuredContentLibrary\Models\StructuredContentItem;
-use Illuminate\Support\Collection;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -22,23 +20,13 @@ class BuildPublicStructuredContentItemsAction
      */
     public function handle(StructuredContentType $type, ?int $siteId = null, ?int $limit = null): array
     {
-        /** @var Collection<int, StructuredContentItem> $items */
-        $items = ListStructuredContentItemsAction::run($type, $siteId);
+        $itemsByType = BuildPublicStructuredContentItemsForTypesAction::run([$type], $siteId);
+        $items = $itemsByType[$type->value] ?? [];
 
         if ($limit !== null) {
-            $items = $items->take(max(0, $limit));
+            return array_slice($items, 0, max(0, $limit));
         }
 
-        return $items
-            ->map(static fn (StructuredContentItem $item): PublicStructuredContentItemData => new PublicStructuredContentItemData(
-                type: $item->type,
-                title: $item->title,
-                slug: $item->slug,
-                summary: $item->summary,
-                content: $item->content,
-                payload: BuildPublicStructuredContentPayloadAction::run($item->payload),
-            ))
-            ->values()
-            ->all();
+        return $items;
     }
 }

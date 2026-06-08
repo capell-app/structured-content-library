@@ -18,20 +18,41 @@ final class BuildStructuredContentSectionsAction
      */
     public function handle(array $sections, ?int $siteId = null): array
     {
-        $resolvedSections = [];
+        $definitions = [];
+        $types = [];
 
         foreach ($sections as $key => $definition) {
             $type = $this->type($definition);
-            $items = BuildPublicStructuredContentItemsAction::run($type, $siteId, $this->limit($definition));
+            $types[] = $type;
+            $definitions[] = [
+                'key' => (string) $key,
+                'type' => $type,
+                'label' => $this->label($definition, $type),
+                'limit' => $this->limit($definition),
+            ];
+        }
+
+        $itemsByType = BuildPublicStructuredContentItemsForTypesAction::run($types, $siteId);
+        $resolvedSections = [];
+
+        foreach ($definitions as $definition) {
+            /** @var StructuredContentType $type */
+            $type = $definition['type'];
+            $items = $itemsByType[$type->value] ?? [];
+            $limit = $definition['limit'];
+
+            if (is_int($limit)) {
+                $items = array_slice($items, 0, max(0, $limit));
+            }
 
             if ($items === []) {
                 continue;
             }
 
             $resolvedSections[] = new StructuredContentSectionData(
-                key: (string) $key,
+                key: $definition['key'],
                 type: $type,
-                label: $this->label($definition, $type),
+                label: $definition['label'],
                 items: $items,
             );
         }
