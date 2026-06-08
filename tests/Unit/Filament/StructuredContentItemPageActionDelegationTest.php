@@ -29,13 +29,13 @@ it('delegates the create page save path to the create Action', function (): void
         'sort_order' => 7,
     ]);
 
-    expect($record)->toBeInstanceOf(StructuredContentItem::class)
-        ->and($record->exists)->toBeTrue()
-        ->and($record->title)->toBe('Customer proof')
-        ->and($record->slug)->toBe('customer-proof')
-        ->and($record->payload?->quote)->toBe('The package stores reusable proof.')
-        ->and($record->published_at)->not->toBeNull()
-        ->and($record->sort_order)->toBe(7);
+    expect($record)->toBeInstanceOf(StructuredContentItem::class);
+    expect($record->exists)->toBeTrue();
+    expect($record->title)->toBe('Customer proof');
+    expect($record->slug)->toBe('customer-proof');
+    expect($record->payload?->quote)->toBe('The package stores reusable proof.');
+    expect($record->published_at)->not->toBeNull();
+    expect($record->sort_order)->toBe(7);
 });
 
 it('delegates the edit page save path to the update Action', function (): void {
@@ -58,11 +58,11 @@ it('delegates the edit page save path to the update Action', function (): void {
         ],
     ]);
 
-    expect($updatedRecord)->toBeInstanceOf(StructuredContentItem::class)
-        ->and($updatedRecord->type)->toBe(StructuredContentType::Faq)
-        ->and($updatedRecord->status)->toBe(StructuredContentStatus::Published)
-        ->and($updatedRecord->title)->toBe('Updated FAQ')
-        ->and($updatedRecord->slug)->toBe('updated-faq')
-        ->and($updatedRecord->payload?->question)->toBe('Can admins save through Filament?')
-        ->and($updatedRecord->published_at)->not->toBeNull();
+    expect($updatedRecord)->toBeInstanceOf(StructuredContentItem::class);
+    expect($updatedRecord->type)->toBe(StructuredContentType::Faq);
+    expect($updatedRecord->status)->toBe(StructuredContentStatus::Published);
+    expect($updatedRecord->title)->toBe('Updated FAQ');
+    expect($updatedRecord->slug)->toBe('updated-faq');
+    expect($updatedRecord->payload?->question)->toBe('Can admins save through Filament?');
+    expect($updatedRecord->published_at)->not->toBeNull();
 });

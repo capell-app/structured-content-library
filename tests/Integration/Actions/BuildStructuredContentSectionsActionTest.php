@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
+use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
+use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
@@ -57,14 +59,25 @@ it('builds section-ready structured content groups for themes and content sectio
         static fn (mixed $section): array => $section->toArray(),
         $sections,
     ), JSON_THROW_ON_ERROR);
+    $servicesSection = $sections[0] ?? null;
+    $testimonialsSection = $sections[1] ?? null;
+
+    throw_unless($servicesSection instanceof StructuredContentSectionData, RuntimeException::class);
+    throw_unless($testimonialsSection instanceof StructuredContentSectionData, RuntimeException::class);
+
+    $serviceItem = $servicesSection->items[0] ?? null;
+    $testimonialItem = $testimonialsSection->items[0] ?? null;
+
+    throw_unless($serviceItem instanceof PublicStructuredContentItemData, RuntimeException::class);
+    throw_unless($testimonialItem instanceof PublicStructuredContentItemData, RuntimeException::class);
 
     expect($sections)->toHaveCount(2)
-        ->and($sections[0]->key)->toBe('services')
-        ->and($sections[0]->label)->toBe('What we do')
-        ->and($sections[0]->items)->toHaveCount(1)
-        ->and($sections[0]->items[0]->title)->toBe('Implementation')
-        ->and($sections[1]->key)->toBe('testimonials')
-        ->and($sections[1]->items[0]->payload['quote'])->toBe('Reusable content shipped faster.')
+        ->and($servicesSection->key)->toBe('services')
+        ->and($servicesSection->label)->toBe('What we do')
+        ->and($servicesSection->items)->toHaveCount(1)
+        ->and($serviceItem->title)->toBe('Implementation')
+        ->and($testimonialsSection->key)->toBe('testimonials')
+        ->and($testimonialItem->payload['quote'] ?? null)->toBe('Reusable content shipped faster.')
         ->and($payload)->not->toContain('Wrong site')
         ->and($payload)->not->toContain('Draft FAQ')
         ->and($payload)->not->toContain('site_id')
@@ -134,10 +147,19 @@ it('invalidates cached public content when structured content changes', function
     $updatedSections = BuildStructuredContentSectionsAction::run([
         'services' => StructuredContentType::Service,
     ]);
+    $initialSection = $initialSections[0] ?? null;
+    $updatedSection = $updatedSections[0] ?? null;
 
-    expect($initialSections[0]->items)->toHaveCount(1)
-        ->and($updatedSections[0]->items)->toHaveCount(2)
-        ->and($updatedSections[0]->items[1]->title)->toBe('New service');
+    throw_unless($initialSection instanceof StructuredContentSectionData, RuntimeException::class);
+    throw_unless($updatedSection instanceof StructuredContentSectionData, RuntimeException::class);
+
+    $newItem = $updatedSection->items[1] ?? null;
+
+    throw_unless($newItem instanceof PublicStructuredContentItemData, RuntimeException::class);
+
+    expect($initialSection->items)->toHaveCount(1)
+        ->and($updatedSection->items)->toHaveCount(2)
+        ->and($newItem->title)->toBe('New service');
 });
 
 function structured_content_library_select_query_count(): int

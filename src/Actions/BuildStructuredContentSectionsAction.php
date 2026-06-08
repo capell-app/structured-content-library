@@ -8,6 +8,9 @@ use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static list<StructuredContentSectionData> run(array<string, StructuredContentType|array{type: StructuredContentType|string, label?: string, limit?: int|null}> $sections, ?int $siteId = null)
+ */
 final class BuildStructuredContentSectionsAction
 {
     use AsObject;

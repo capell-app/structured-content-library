@@ -11,6 +11,9 @@ use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Illuminate\Support\Collection;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static array<string, list<PublicStructuredContentItemData>> run(list<StructuredContentType> $types, ?int $siteId = null)
+ */
 final class BuildPublicStructuredContentItemsForTypesAction
 {
     use AsObject;

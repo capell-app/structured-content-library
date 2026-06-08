@@ -115,6 +115,10 @@ it('registers frontend cache invalidation dependencies when the registry is avai
         /** @var array<class-string, string|array<int, string>> */
         public array $dependencies = [];
 
+        /**
+         * @param  class-string  $modelClass
+         * @param  string|array<int, string>  $cachePatterns
+         */
         public function registerDependency(string $modelClass, string|array $cachePatterns): void
         {
             $this->dependencies[$modelClass] = $cachePatterns;

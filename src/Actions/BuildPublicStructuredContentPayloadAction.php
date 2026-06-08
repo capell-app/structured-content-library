@@ -7,6 +7,9 @@ namespace Capell\StructuredContentLibrary\Actions;
 use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/**
+ * @method static array<string, string> run(?StructuredContentPayloadData $payload)
+ */
 final class BuildPublicStructuredContentPayloadAction
 {
     use AsObject;
