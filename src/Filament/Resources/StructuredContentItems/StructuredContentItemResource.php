@@ -31,6 +31,8 @@ use Override;
 
 class StructuredContentItemResource extends Resource
 {
+    protected static ?string $slug = 'structured-content-library/structured-content-items';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'title';
