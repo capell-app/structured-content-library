@@ -63,7 +63,13 @@
         "importStructuredContentItems": "Capell\\StructuredContentLibrary\\Actions\\ImportStructuredContentItemsAction",
         "listStructuredContentItems": "Capell\\StructuredContentLibrary\\Actions\\ListStructuredContentItemsAction"
     },
-    "permissions": [],
+    "permissions": [
+        "ViewAny:StructuredContentItem",
+        "View:StructuredContentItem",
+        "Create:StructuredContentItem",
+        "Update:StructuredContentItem",
+        "Delete:StructuredContentItem"
+    ],
     "capabilities": [
         "structured-content-library",
         "structured-content-public-adapter",
@@ -98,8 +104,14 @@
             "clients": []
         },
         "adminSurface": {
-            "authorization": "panel-auth",
-            "permissions": []
+            "authorization": "permissions",
+            "permissions": [
+                "ViewAny:StructuredContentItem",
+                "View:StructuredContentItem",
+                "Create:StructuredContentItem",
+                "Update:StructuredContentItem",
+                "Delete:StructuredContentItem"
+            ]
         }
     },
     "performance": {
