@@ -4,6 +4,11 @@
     "generatedFor": "deployment-screenshot-runner",
     "requiresInstalledPackage": true,
     "outputDirectory": "packages/structured-content-library/docs/screenshots",
+    "composerRequires": [
+        "capell-app/structured-content-library",
+        "capell-app/content-sections",
+        "capell-app/foundation-theme"
+    ],
     "entries": [
         {
             "id": "structured-content-list",
@@ -12,6 +17,9 @@
             "surface": "admin",
             "targetType": "admin-resource",
             "target": "StructuredContentItemResource",
+            "scenario": "admin-index",
+            "url": "/structured-content-library/structured-content-items",
+            "waitFor": "table",
             "required": true,
             "notes": "Capture the item table with type/status badges, reusable content records, and admin actions.",
             "useCase": "An administrator reviews typed reusable content records before themes render them.",
@@ -24,6 +32,9 @@
             "surface": "admin",
             "targetType": "admin-resource",
             "target": "StructuredContentItemResource.Create",
+            "scenario": "admin-form",
+            "url": "/structured-content-library/structured-content-items/create",
+            "waitFor": "form",
             "required": true,
             "notes": "Capture a create form showing type, status, portable summary/content, and typed payload fields.",
             "useCase": "An administrator creates reusable content without storing designed page markup.",
@@ -31,14 +42,17 @@
         },
         {
             "id": "structured-content-theme-rendering",
-            "title": "Theme rendering reusable content.",
+            "title": "Structured content reusable item edit form.",
             "package": "structured-content-library",
-            "surface": "shared",
-            "targetType": "rendered-section",
-            "target": "BuildStructuredContentSectionsAction",
+            "surface": "admin",
+            "targetType": "admin-resource",
+            "target": "StructuredContentItemResource.Edit",
+            "scenario": "admin-form",
+            "url": "/structured-content-library/structured-content-items/{first-record}/edit",
+            "waitFor": "form",
             "required": true,
-            "notes": "Capture published structured content rendered as theme-safe testimonial, case-study, and FAQ sections.",
-            "useCase": "A theme consumes published structured records through the package public adapter.",
+            "notes": "Capture a published reusable content record with portable body copy and typed public-adapter payload fields.",
+            "useCase": "An administrator verifies the content record that themes consume through the package public adapter.",
             "screenshotPath": "packages/structured-content-library/docs/screenshots/structured-content-theme-rendering.png"
         }
     ]

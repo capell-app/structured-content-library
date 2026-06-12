@@ -1,40 +1,69 @@
 # Structured Content Library
 
-Structured Content Library owns reusable business-content records for Capell themes and packages.
+Structured Content Library owns reusable, portable business-content records for Capell themes, Content Sections, and package adapters.
 
-The package stores portable content for:
+## At A Glance
 
-- case studies
-- testimonials
-- team members
-- services
-- FAQs
-- resources
-- partners
-- locations
-- logos
+| Field            | Value                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| Composer package | `capell-app/structured-content-library`                                             |
+| Namespace        | `Capell\StructuredContentLibrary`                                                   |
+| Product group    | Capell Content                                                                      |
+| Surfaces         | Admin, shared runtime Actions                                                       |
+| Provider         | `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider` |
+| Admin resource   | `StructuredContentItemResource`                                                     |
+| Table            | `structured_content_items`                                                          |
+| Supports         | Content Sections and Foundation Theme through public-safe section payloads          |
 
-It intentionally does not store designed layout markup, Tailwind classes, frontend authoring markers, or theme-specific structures. Themes should render the model data through their own Blade/components.
+## Why It Helps Your Capell Workflow
 
-## Foundation
+Owners get reusable content records for services, testimonials, FAQs, partners, locations, logos, team members, case studies, and resources without locking that content to one page layout.
 
-The first slice provides:
+Editors manage structured records once and let themes/packages render them wherever needed. Developers get typed Actions and DTOs for public-safe item lists and grouped section payloads instead of storing designed markup in database content fields.
 
-- `StructuredContentItem`, a package-owned Eloquent model backed by `structured_content_items`
-- `StructuredContentType`, a backed enum for the supported content concepts
-- `StructuredContentStatus`, a backed enum for draft/published/archive state
-- `StructuredContentItemData` and `StructuredContentPayloadData` DTOs for structured writes and JSON payloads
-- Actions for creating, updating, importing, listing, and building public-safe section payloads by type/site
+## What It Adds
 
-Use `ListStructuredContentItemsAction::run($type, $siteId)` when a theme or package needs published reusable records.
-Use `BuildStructuredContentSectionsAction::run($sections, $siteId)` when a theme or content-section package needs grouped section-ready payloads.
+- `StructuredContentItem` model with draft, published, and archived status.
+- `StructuredContentType` enum for the supported reusable content concepts.
+- `StructuredContentItemResource` Filament admin resource.
+- Actions for create, update, import, list, slug resolution, public item output, and grouped section output.
+- DTOs for write boundaries, public payloads, import results, and section data.
+- Cache invalidation hooks for structured-content frontend dependencies where the frontend cache registry is available.
 
-Public adapter payloads are filtered before they leave the package boundary: scalar payload fields are emitted as plain text, `url` must be HTTP(S) or a root-relative URL, and `email` must validate as an email address. Themes should still render values with normal Blade escaping unless they are intentionally rendering the already-validated `content` or `summary` portable HTML fields.
+## Boundaries
 
-When a record is saved as published without an explicit `published_at`, the package stores the current timestamp so ordering and audit trails can distinguish newly published records from drafts.
+The package stores portable content only. It must not store designed layout wrappers, Tailwind classes, frontend authoring markers, theme-specific HTML structures, or package internals in content fields.
 
-Slugs are normalized and kept unique within each content type and site scope. If a generated or supplied slug is already used by another active or soft-deleted record, the write actions append a numeric suffix such as `-2` before saving.
+Themes and Content Sections should consume `PublicStructuredContentItemData` or `StructuredContentSectionData` and render their own presentation. Public adapter payloads filter scalar fields, validate URLs/emails, and keep package metadata out of frontend output.
 
-Marketplace screenshot coverage is declared in `docs/screenshots.json`, but the
-three product captures still need real Capell screenshot runner output before
-promotion. `capell.json` currently lists only the extension card.
+## Runtime Surface
+
+- Provider: `src/Providers/StructuredContentLibraryServiceProvider.php`
+- Admin resource: `src/Filament/Resources/StructuredContentItems/`
+- Actions: `src/Actions/`
+- Data objects: `src/Data/`
+- Enums: `src/Enums/`
+- Model: `src/Models/StructuredContentItem.php`
+- Cache support: `src/Support/StructuredContentCache.php`
+- Tests: `packages/structured-content-library/tests`
+
+## Docs
+
+- [Package docs](docs/README.md)
+- [Overview](docs/overview.md)
+- [Improvement plan](docs/improvement-plan.md)
+- [Screenshots contract](docs/screenshots.json)
+
+## Testing
+
+```bash
+vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml
+```
+
+## Troubleshooting
+
+| Symptom                           | Likely cause                                                                            | Check                                                                        | Fix                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Public adapter returns no records | Records are drafts, unpublished, outside site scope, or filtered by type                | Check `structured_content_items.status`, `published_at`, `site_id`, and type | Publish the record or adjust the Action call scope              |
+| Save rejects content              | `EnsurePortableContentHtmlAction` found presentation markup or unsafe HTML              | Check the validation message and content field                               | Store semantic HTML only and move layout/classes into the theme |
+| Slug gets a suffix                | Another active or soft-deleted record already owns the slug in the same type/site scope | Query `structured_content_items` by type, site, and slug                     | Choose a unique slug or restore/update the existing record      |
