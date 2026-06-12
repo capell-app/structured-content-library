@@ -90,7 +90,7 @@ final class StructuredContentCache
             self::PREFIX,
             self::version(),
             $name,
-            sha1($encodedParts),
+            hash('sha256', $encodedParts),
         ]);
     }
 
