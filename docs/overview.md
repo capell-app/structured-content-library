@@ -1,40 +1,96 @@
-# Structured Content Library Overview
+# Structured Content Library
 
-Structured Content Library is the package-owned source for reusable content concepts that themes currently model themselves.
+<!-- prettier-ignore-start -->
+
+## What This Plugin Adds
+
+Structured Content Library is an **Available**, **Schema-owning** Capell package in the **Capell Foundation** product group. It ships as `capell-app/structured-content-library` and extends these surfaces: admin, shared.
+
+Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.
+
+After install, admins get package-owned management or reporting surfaces inside Capell.
+
+Status details:
+
+- Status: Available
+- Tier: free
+- Bundle: foundation
+- Composer package: `capell-app/structured-content-library`
+- Namespace: `Capell\StructuredContentLibrary`
+- Theme key: not applicable
+
+## Why It Matters
+
+**For developers:** The package gives developers package-owned service providers, Actions, Data objects, models, and Filament classes instead of pushing this behaviour into core or application code.
+
+**For teams:** A typed content library for testimonials, case studies, team members, FAQs, services and more - reusable, theme-safe records your themes render anywhere.
+
+## Screens And Workflow
+
+Screenshot contract: `screenshots.json`.
+
+- Structured content item list (admin, required).
+- Structured content create form (admin, required).
+- Structured content reusable item edit form (admin, required).
+
+## Technical Shape
+
+- Service providers: `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`.
+- Migrations: `packages/structured-content-library/database/migrations/2026_05_31_000001_create_structured_content_items_table.php`, `packages/structured-content-library/database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`.
+- Models: `StructuredContentItem`.
+- Filament classes: `CreateStructuredContentItem`, `EditStructuredContentItem`, `ListStructuredContentItems`, `StructuredContentItemResource`.
+- Actions: `BuildPublicStructuredContentItemsAction`, `BuildPublicStructuredContentItemsForTypesAction`, `BuildPublicStructuredContentPayloadAction`, `BuildStructuredContentSectionsAction`, `CreateStructuredContentItemAction`, `EnsurePortableContentHtmlAction`, `ImportStructuredContentItemsAction`, `ListStructuredContentItemsAction`, `ResolveUniqueStructuredContentSlugAction`, `UpdateStructuredContentItemAction`.
+- Data objects: `PublicStructuredContentItemData`, `StructuredContentImportResultData`, `StructuredContentItemData`, `StructuredContentPayloadData`, `StructuredContentSectionData`.
+- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`.
+- Health checks: `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`.
+- Cache tags: `structured-content-library`.
 
 ## Data Model
 
-The initial foundation uses a single `structured_content_items` table. Each record has a `type` enum, publish status, title, slug, optional summary/content, and a typed `payload` JSON object for concept-specific portable metadata.
+- Required tables: `structured_content_items`.
+- Models: `StructuredContentItem`.
+- Migration files: `2026_05_31_000001_create_structured_content_items_table.php`, `2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`.
+- Migration impact: run host migrations through the package install flow before opening package surfaces.
+- Deletion/retention behaviour: Docs gap unless the package has an explicit pruning command, retention setting, or tested cascade path.
 
-This keeps the first slice small while still giving themes stable package-owned records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.
+## Install Impact
 
-`BuildPublicStructuredContentItemsAction` exposes published, site-aware, type-filtered DTOs for themes and content-section adapters. The DTO output omits model IDs, site IDs, admin fields, package names, and editor metadata.
+- Admin navigation: adds package-owned Filament classes when registered.
+- Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`.
+- Public routes: none detected in package route files.
+- Database changes: package migrations are declared.
+- Settings: no package settings declared.
+- Queues or schedules: none detected in standard package paths.
+- Cache tags: `structured-content-library`.
+- Commands: none declared.
 
-Payload values in public DTOs are filtered at the package boundary. Text-like payload fields are reduced to plain text, unsafe URL schemes are removed, and emails must validate before they are emitted. This keeps the adapter safe even when downstream theme code consumes reusable fields in different section templates.
+## Common Pitfalls
 
-`BuildStructuredContentSectionsAction` groups those public DTOs into section-ready payloads for themes and content-section packages. Consumers pass section keys with content types, labels, and limits; the action returns only sections that have public items.
+- Run migrations before opening package resources or public routes.
+- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
 
-`ImportStructuredContentItemsAction` gives demo kits, themes, and migration tools a package-owned importer for moving existing reusable content into this table. Imports reuse the create/update action boundaries, so portable HTML validation and slug normalization stay consistent.
+## Troubleshooting
 
-Create and update writes also resolve slug collisions before persistence. Slug uniqueness is scoped to the content type and site, includes soft-deleted records so restores remain predictable, and appends numeric suffixes when a title or supplied slug is already taken.
+| Symptom | Likely cause | Check | Fix |
+| --- | --- | --- | --- |
+| Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
+| Admin screen or command fails on missing table | Package migrations have not run | Check the tables listed in `Data Model` | Run host migrations and rerun the focused package test |
 
-## Content Safety
+## Quick Start
 
-Database content must stay portable across themes. The create and update actions accept simple semantic HTML in `content` and `summary`, and reject designed markup such as classes, styles, IDs, data attributes, inline handlers, and non-semantic wrapper tags.
+1. Install the package: `composer require capell-app/structured-content-library`.
+2. Run the required setup: `php artisan migrate`.
+3. Open the related Capell admin surface and verify Structured Content Library appears.
 
-Admin/editor UI, signed URLs, selectors, package names, and frontend authoring internals must not be stored in these records or emitted by public renderers.
+## Next Steps
 
-## Integration
+- [Package docs index](README.md)
+- [Screenshot contract](screenshots.json)
+- [Marketplace assets](assets/marketplace/)
+- [Capell content language plan](../../../docs/CONTENT_LANGUAGE_PLAN.md)
+- [Capell documentation design system](../../../docs/DESIGN_SYSTEM.md)
+- [Capell and package ERD notes](../../../docs/erd/capell-and-package-erds.md)
+- Related packages: [Content Sections](../../content-sections/README.md), [Foundation Theme](../../foundation-theme/README.md).
+- Focused tests: `vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml`.
 
-Owning theme and content-section packages should consume `BuildStructuredContentSectionsAction` instead of storing demo-shaped business content. This package owns the reusable records, public-safe DTOs, and section adapter payload shape; themes remain responsible for their rendered presentation.
-
-Package-specific import commands can wrap `ImportStructuredContentItemsAction` when a theme or demo package has enough known content to migrate automatically.
-
-## Screenshot Coverage
-
-`docs/screenshots.json` declares the three required marketplace captures: the
-admin item list, the create form with typed payload fields, and a theme-rendered
-section consuming published structured content. The previous illustrative
-PNG/SVG captures were removed because they were not Capell runner output, so
-`capell.json` currently lists only the extension card until real captures are
-generated.
+<!-- prettier-ignore-end -->

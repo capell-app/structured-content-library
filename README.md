@@ -1,69 +1,97 @@
 # Structured Content Library
 
-Structured Content Library owns reusable, portable business-content records for Capell themes, Content Sections, and package adapters.
+<!-- prettier-ignore-start -->
 
-## At A Glance
+## What This Plugin Adds
 
-| Field            | Value                                                                               |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| Composer package | `capell-app/structured-content-library`                                             |
-| Namespace        | `Capell\StructuredContentLibrary`                                                   |
-| Product group    | Capell Content                                                                      |
-| Surfaces         | Admin, shared runtime Actions                                                       |
-| Provider         | `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider` |
-| Admin resource   | `StructuredContentItemResource`                                                     |
-| Table            | `structured_content_items`                                                          |
-| Supports         | Content Sections and Foundation Theme through public-safe section payloads          |
+Structured Content Library is an **Available**, **Schema-owning** Capell package in the **Capell Foundation** product group. It ships as `capell-app/structured-content-library` and extends these surfaces: admin, shared.
 
-## Why It Helps Your Capell Workflow
+Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.
 
-Owners get reusable content records for services, testimonials, FAQs, partners, locations, logos, team members, case studies, and resources without locking that content to one page layout.
+After install, admins get package-owned management or reporting surfaces inside Capell.
 
-Editors manage structured records once and let themes/packages render them wherever needed. Developers get typed Actions and DTOs for public-safe item lists and grouped section payloads instead of storing designed markup in database content fields.
+Status details:
 
-## What It Adds
+- Status: Available
+- Tier: free
+- Bundle: foundation
+- Composer package: `capell-app/structured-content-library`
+- Namespace: `Capell\StructuredContentLibrary`
+- Theme key: not applicable
 
-- `StructuredContentItem` model with draft, published, and archived status.
-- `StructuredContentType` enum for the supported reusable content concepts.
-- `StructuredContentItemResource` Filament admin resource.
-- Actions for create, update, import, list, slug resolution, public item output, and grouped section output.
-- DTOs for write boundaries, public payloads, import results, and section data.
-- Cache invalidation hooks for structured-content frontend dependencies where the frontend cache registry is available.
+## Why It Matters
 
-## Boundaries
+**For developers:** The package gives developers package-owned service providers, Actions, Data objects, models, and Filament classes instead of pushing this behaviour into core or application code.
 
-The package stores portable content only. It must not store designed layout wrappers, Tailwind classes, frontend authoring markers, theme-specific HTML structures, or package internals in content fields.
+**For teams:** A typed content library for testimonials, case studies, team members, FAQs, services and more - reusable, theme-safe records your themes render anywhere.
 
-Themes and Content Sections should consume `PublicStructuredContentItemData` or `StructuredContentSectionData` and render their own presentation. Public adapter payloads filter scalar fields, validate URLs/emails, and keep package metadata out of frontend output.
+## Screens And Workflow
 
-## Runtime Surface
+Screenshot contract: `docs/screenshots.json`.
 
-- Provider: `src/Providers/StructuredContentLibraryServiceProvider.php`
-- Admin resource: `src/Filament/Resources/StructuredContentItems/`
-- Actions: `src/Actions/`
-- Data objects: `src/Data/`
-- Enums: `src/Enums/`
-- Model: `src/Models/StructuredContentItem.php`
-- Cache support: `src/Support/StructuredContentCache.php`
-- Tests: `packages/structured-content-library/tests`
+- Structured content item list (admin, required).
+- Structured content create form (admin, required).
+- Structured content reusable item edit form (admin, required).
 
-## Docs
+## Technical Shape
 
-- [Package docs](docs/README.md)
-- [Overview](docs/overview.md)
-- [Improvement plan](docs/improvement-plan.md)
-- [Screenshots contract](docs/screenshots.json)
+- Service providers: `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`.
+- Migrations: `packages/structured-content-library/database/migrations/2026_05_31_000001_create_structured_content_items_table.php`, `packages/structured-content-library/database/migrations/2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`.
+- Models: `StructuredContentItem`.
+- Filament classes: `CreateStructuredContentItem`, `EditStructuredContentItem`, `ListStructuredContentItems`, `StructuredContentItemResource`.
+- Actions: `BuildPublicStructuredContentItemsAction`, `BuildPublicStructuredContentItemsForTypesAction`, `BuildPublicStructuredContentPayloadAction`, `BuildStructuredContentSectionsAction`, `CreateStructuredContentItemAction`, `EnsurePortableContentHtmlAction`, `ImportStructuredContentItemsAction`, `ListStructuredContentItemsAction`, `ResolveUniqueStructuredContentSlugAction`, `UpdateStructuredContentItemAction`.
+- Data objects: `PublicStructuredContentItemData`, `StructuredContentImportResultData`, `StructuredContentItemData`, `StructuredContentPayloadData`, `StructuredContentSectionData`.
+- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`.
+- Health checks: `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`.
+- Cache tags: `structured-content-library`.
 
-## Testing
+## Data Model
 
-```bash
-vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml
-```
+- Required tables: `structured_content_items`.
+- Models: `StructuredContentItem`.
+- Migration files: `2026_05_31_000001_create_structured_content_items_table.php`, `2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table.php`.
+- Migration impact: run host migrations through the package install flow before opening package surfaces.
+- Deletion/retention behaviour: Docs gap unless the package has an explicit pruning command, retention setting, or tested cascade path.
+
+## Install Impact
+
+- Admin navigation: adds package-owned Filament classes when registered.
+- Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`.
+- Public routes: none detected in package route files.
+- Database changes: package migrations are declared.
+- Settings: no package settings declared.
+- Queues or schedules: none detected in standard package paths.
+- Cache tags: `structured-content-library`.
+- Commands: none declared.
+
+## Common Pitfalls
+
+- Run migrations before opening package resources or public routes.
+- Keep `composer.json`, `composer.local.json`, `capell.json`, docs, screenshots, and tests aligned when the package surface changes.
 
 ## Troubleshooting
 
-| Symptom                           | Likely cause                                                                            | Check                                                                        | Fix                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Public adapter returns no records | Records are drafts, unpublished, outside site scope, or filtered by type                | Check `structured_content_items.status`, `published_at`, `site_id`, and type | Publish the record or adjust the Action call scope              |
-| Save rejects content              | `EnsurePortableContentHtmlAction` found presentation markup or unsafe HTML              | Check the validation message and content field                               | Store semantic HTML only and move layout/classes into the theme |
-| Slug gets a suffix                | Another active or soft-deleted record already owns the slug in the same type/site scope | Query `structured_content_items` by type, site, and slug                     | Choose a unique slug or restore/update the existing record      |
+| Symptom | Likely cause | Check | Fix |
+| --- | --- | --- | --- |
+| Package surface is missing after install | Provider or manifest is not loaded | Confirm `capell.json`, package `composer.json`, and provider registration | Reinstall the package, refresh Composer autoload, and clear host caches |
+| Admin screen or command fails on missing table | Package migrations have not run | Check the tables listed in `Data Model` | Run host migrations and rerun the focused package test |
+
+## Quick Start
+
+1. Install the package: `composer require capell-app/structured-content-library`.
+2. Run the required setup: `php artisan migrate`.
+3. Open the related Capell admin surface and verify Structured Content Library appears.
+
+## Next Steps
+
+- [Package docs](docs/README.md)
+- [Overview](docs/overview.md)
+- [Screenshot contract](docs/screenshots.json)
+- [Marketplace assets](docs/assets/marketplace/)
+- [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
+- [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
+- [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
+- Related packages: [Content Sections](../content-sections/README.md), [Foundation Theme](../foundation-theme/README.md).
+- Focused tests: `vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml`.
+
+<!-- prettier-ignore-end -->
