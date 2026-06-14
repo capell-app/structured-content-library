@@ -36,13 +36,35 @@ final class StructuredContentCache
         $typeValues = array_values(array_unique($typeValues));
         sort($typeValues);
 
-        $cached = self::store()->remember(self::key('public-items-by-types', [
+        $cacheKey = self::key('public-items-by-types', [
             'locale' => app()->getLocale(),
             'site_id' => $siteId,
             'types' => implode(',', $typeValues),
-        ]), self::expiresAt(), $callback);
+        ]);
+        $store = self::store();
+        $payload = $store->get($cacheKey);
 
-        return is_array($cached) ? $cached : $callback();
+        if (is_array($payload)) {
+            try {
+                $items = self::publicItemsFromPayload($payload);
+
+                if (is_array($items)) {
+                    return $items;
+                }
+            } catch (Throwable) {
+                //
+            }
+        }
+
+        if ($payload !== null) {
+            $store->forget($cacheKey);
+        }
+
+        $items = $callback();
+
+        $store->put($cacheKey, self::publicItemsPayload($items), self::expiresAt());
+
+        return $items;
     }
 
     public static function flush(): void
@@ -73,6 +95,51 @@ final class StructuredContentCache
         }
 
         return Cache::store();
+    }
+
+    /**
+     * @param  array<string, list<PublicStructuredContentItemData>>  $itemsByType
+     * @return array<string, list<array<string, mixed>>>
+     */
+    private static function publicItemsPayload(array $itemsByType): array
+    {
+        $payload = [];
+
+        foreach ($itemsByType as $type => $items) {
+            $payload[$type] = array_map(
+                static fn (PublicStructuredContentItemData $item): array => $item->toArray(),
+                $items,
+            );
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<mixed>  $payload
+     * @return array<string, list<PublicStructuredContentItemData>>|null
+     */
+    private static function publicItemsFromPayload(array $payload): ?array
+    {
+        $itemsByType = [];
+
+        foreach ($payload as $type => $items) {
+            if (! is_string($type) || ! is_array($items)) {
+                return null;
+            }
+
+            $itemsByType[$type] = [];
+
+            foreach ($items as $item) {
+                if (! is_array($item)) {
+                    return null;
+                }
+
+                $itemsByType[$type][] = PublicStructuredContentItemData::from($item);
+            }
+        }
+
+        return $itemsByType;
     }
 
     /**
