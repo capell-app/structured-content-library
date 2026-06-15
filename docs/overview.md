@@ -41,7 +41,7 @@ Screenshot contract: `screenshots.json`.
 - Filament classes: `CreateStructuredContentItem`, `EditStructuredContentItem`, `ListStructuredContentItems`, `StructuredContentItemResource`.
 - Actions: `BuildPublicStructuredContentItemsAction`, `BuildPublicStructuredContentItemsForTypesAction`, `BuildPublicStructuredContentPayloadAction`, `BuildStructuredContentSectionsAction`, `CreateStructuredContentItemAction`, `EnsurePortableContentHtmlAction`, `ImportStructuredContentItemsAction`, `ListStructuredContentItemsAction`, `ResolveUniqueStructuredContentSlugAction`, `UpdateStructuredContentItemAction`.
 - Data objects: `PublicStructuredContentItemData`, `StructuredContentImportResultData`, `StructuredContentItemData`, `StructuredContentPayloadData`, `StructuredContentSectionData`.
-- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`.
+- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`.
 - Health checks: `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`.
 - Cache tags: `structured-content-library`.
 
@@ -58,6 +58,7 @@ Screenshot contract: `screenshots.json`.
 - Admin navigation: adds package-owned Filament classes when registered.
 - Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`.
 - Public routes: none detected in package route files.
+- Section/theme adapters: manifest metadata points Content Sections and themes at hydrated public Data objects from `BuildStructuredContentSectionsAction` and `BuildPublicStructuredContentItemsAction`; no route, Blade query, editor marker, model id, signed URL, or package identifier is emitted in public output.
 - Database changes: package migrations are declared.
 - Settings: no package settings declared.
 - Queues or schedules: none detected in standard package paths.
