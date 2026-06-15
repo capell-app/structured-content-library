@@ -3,12 +3,18 @@
 declare(strict_types=1);
 
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Support\Manifest\ManifestValidator;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction;
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
+use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
+use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\StructuredContentItemResource;
 use Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution;
 use Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution;
+use Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution;
+use Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
@@ -20,6 +26,9 @@ uses(StructuredContentLibraryTestCase::class);
 
 it('declares provider classes and package metadata', function (): void {
     $manifest = capell_json_file_array(__DIR__ . '/../../../capell.json');
+    $composer = capell_json_file_array(__DIR__ . '/../../../composer.json');
+
+    (new ManifestValidator)->validate($manifest, $composer, 'capell-app/structured-content-library', __DIR__ . '/../../../capell.json');
 
     expect(StructuredContentLibraryServiceProvider::class)->toExtend(AbstractPackageServiceProvider::class)
         ->and(StructuredContentLibraryServiceProvider::$name)->toBe('capell-structured-content-library')
@@ -34,11 +43,28 @@ it('declares provider classes and package metadata', function (): void {
             'type' => 'model',
             'class' => StructuredContentModelsContribution::class,
         ])
-        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->not->toContain('admin-resource')
-        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->toBe([
-            'content-section-adapter',
-            'theme-adapter',
+        ->and(data_get($manifest, 'contributes'))->toContain([
+            'type' => 'agent-capability',
+            'class' => StructuredContentSectionAdapterContribution::class,
+            'capability' => 'content-section-adapter',
+            'adapter' => 'content-sections',
+            'actionClass' => BuildStructuredContentSectionsAction::class,
+            'outputDataClass' => StructuredContentSectionData::class,
+            'consumerPackages' => ['capell-app/content-sections'],
+            'publicOutputSafety' => 'Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted.',
         ])
+        ->and(data_get($manifest, 'contributes'))->toContain([
+            'type' => 'agent-capability',
+            'class' => StructuredContentThemeAdapterContribution::class,
+            'capability' => 'theme-adapter',
+            'adapter' => 'theme',
+            'actionClass' => BuildPublicStructuredContentItemsAction::class,
+            'outputDataClass' => PublicStructuredContentItemData::class,
+            'consumerPackages' => ['capell-app/foundation-theme'],
+            'publicOutputSafety' => 'Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted.',
+        ])
+        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->not->toContain('admin-resource')
+        ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->toBe([])
         ->and(data_get($manifest, 'actions.buildStructuredContentSections'))
         ->toBe(BuildStructuredContentSectionsAction::class)
         ->and(data_get($manifest, 'capabilities'))->toContain(
@@ -51,6 +77,17 @@ it('declares provider classes and package metadata', function (): void {
             'structured-content-theme-adapter',
         )
         ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
+});
+
+it('keeps adapter contribution markers aligned with public data actions', function (): void {
+    expect(StructuredContentSectionAdapterContribution::adapterKey())->toBe('content-section-adapter')
+        ->and(StructuredContentSectionAdapterContribution::actionClass())->toBe(BuildStructuredContentSectionsAction::class)
+        ->and(StructuredContentSectionAdapterContribution::outputDataClass())->toBe(StructuredContentSectionData::class)
+        ->and(StructuredContentSectionAdapterContribution::compatibleCapellApiVersion())->toBe('^4.0')
+        ->and(StructuredContentThemeAdapterContribution::adapterKey())->toBe('theme-adapter')
+        ->and(StructuredContentThemeAdapterContribution::actionClass())->toBe(BuildPublicStructuredContentItemsAction::class)
+        ->and(StructuredContentThemeAdapterContribution::outputDataClass())->toBe(PublicStructuredContentItemData::class)
+        ->and(StructuredContentThemeAdapterContribution::compatibleCapellApiVersion())->toBe('^4.0');
 });
 
 it('declares the marketplace screenshot contract without promoting mock captures', function (): void {

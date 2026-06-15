@@ -43,6 +43,26 @@
         {
             "type": "model",
             "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentModelsContribution"
+        },
+        {
+            "type": "agent-capability",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentSectionAdapterContribution",
+            "capability": "content-section-adapter",
+            "adapter": "content-sections",
+            "actionClass": "Capell\\StructuredContentLibrary\\Actions\\BuildStructuredContentSectionsAction",
+            "outputDataClass": "Capell\\StructuredContentLibrary\\Data\\StructuredContentSectionData",
+            "consumerPackages": ["capell-app/content-sections"],
+            "publicOutputSafety": "Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted."
+        },
+        {
+            "type": "agent-capability",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentThemeAdapterContribution",
+            "capability": "theme-adapter",
+            "adapter": "theme",
+            "actionClass": "Capell\\StructuredContentLibrary\\Actions\\BuildPublicStructuredContentItemsAction",
+            "outputDataClass": "Capell\\StructuredContentLibrary\\Data\\PublicStructuredContentItemData",
+            "consumerPackages": ["capell-app/foundation-theme"],
+            "publicOutputSafety": "Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted."
         }
     ],
     "database": {
@@ -159,6 +179,6 @@
         "categories": ["foundation", "shared", "content"]
     },
     "contributionTraceability": {
-        "deferredContributions": ["content-section-adapter", "theme-adapter"]
+        "deferredContributions": []
     }
 }
