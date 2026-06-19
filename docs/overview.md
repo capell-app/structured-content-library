@@ -33,6 +33,34 @@ Screenshot contract: `screenshots.json`.
 - Structured content create form (admin, required).
 - Structured content reusable item edit form (admin, required).
 
+## Screenshot Evidence
+
+These captures are the package-owned visual contract for the admin pages, public pages, actions, workflows, and feature surfaces described above. Keep this section aligned with `docs/screenshots.json` whenever the package surface changes.
+
+### Structured content item list
+
+![Structured content item list](screenshots/structured-content-list.png)
+
+- Surface: admin · Target: StructuredContentItemResource.
+- Documents: An administrator reviews typed reusable content records before themes render them.
+- Capture notes: Capture the item table with type/status badges, reusable content records, and admin actions.
+
+### Structured content create form
+
+![Structured content create form](screenshots/structured-content-form.png)
+
+- Surface: admin · Target: StructuredContentItemResource.Create.
+- Documents: An administrator creates reusable content without storing designed page markup.
+- Capture notes: Capture a create form showing type, status, portable summary/content, and typed payload fields.
+
+### Structured content reusable item edit form
+
+![Structured content reusable item edit form](screenshots/structured-content-theme-rendering.png)
+
+- Surface: admin · Target: StructuredContentItemResource.Edit.
+- Documents: An administrator verifies the content record that themes consume through the package public adapter.
+- Capture notes: Capture a published reusable content record with portable body copy and typed public-adapter payload fields.
+
 ## Technical Shape
 
 - Service providers: `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`.
