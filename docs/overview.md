@@ -33,34 +33,6 @@ Screenshot contract: `screenshots.json`.
 - Structured content create form (admin, required).
 - Structured content reusable item edit form (admin, required).
 
-## Screenshot Evidence
-
-These captures are the package-owned visual contract for the admin pages, public pages, actions, workflows, and feature surfaces described above. Keep this section aligned with `docs/screenshots.json` whenever the package surface changes.
-
-### Structured content item list
-
-![Structured content item list](screenshots/structured-content-list.png)
-
-- Surface: admin · Target: StructuredContentItemResource.
-- Documents: An administrator reviews typed reusable content records before themes render them.
-- Capture notes: Capture the item table with type/status badges, reusable content records, and admin actions.
-
-### Structured content create form
-
-![Structured content create form](screenshots/structured-content-form.png)
-
-- Surface: admin · Target: StructuredContentItemResource.Create.
-- Documents: An administrator creates reusable content without storing designed page markup.
-- Capture notes: Capture a create form showing type, status, portable summary/content, and typed payload fields.
-
-### Structured content reusable item edit form
-
-![Structured content reusable item edit form](screenshots/structured-content-theme-rendering.png)
-
-- Surface: admin · Target: StructuredContentItemResource.Edit.
-- Documents: An administrator verifies the content record that themes consume through the package public adapter.
-- Capture notes: Capture a published reusable content record with portable body copy and typed public-adapter payload fields.
-
 ## Technical Shape
 
 - Service providers: `Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider`.
@@ -69,7 +41,7 @@ These captures are the package-owned visual contract for the admin pages, public
 - Filament classes: `CreateStructuredContentItem`, `EditStructuredContentItem`, `ListStructuredContentItems`, `StructuredContentItemResource`.
 - Actions: `BuildPublicStructuredContentItemsAction`, `BuildPublicStructuredContentItemsForTypesAction`, `BuildPublicStructuredContentPayloadAction`, `BuildStructuredContentSectionsAction`, `CreateStructuredContentItemAction`, `EnsurePortableContentHtmlAction`, `ImportStructuredContentItemsAction`, `ListStructuredContentItemsAction`, `ResolveUniqueStructuredContentSlugAction`, `UpdateStructuredContentItemAction`.
 - Data objects: `PublicStructuredContentItemData`, `StructuredContentImportResultData`, `StructuredContentItemData`, `StructuredContentPayloadData`, `StructuredContentSectionData`.
-- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`.
+- Manifest contributions: `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`, `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`, `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`.
 - Health checks: `Capell\StructuredContentLibrary\Health\StructuredContentLibraryHealthCheck`.
 - Cache tags: `structured-content-library`.
 
@@ -86,7 +58,6 @@ These captures are the package-owned visual contract for the admin pages, public
 - Admin navigation: adds package-owned Filament classes when registered.
 - Permissions: `ViewAny:StructuredContentItem`, `View:StructuredContentItem`, `Create:StructuredContentItem`, `Update:StructuredContentItem`, `Delete:StructuredContentItem`.
 - Public routes: none detected in package route files.
-- Section/theme adapters: manifest metadata points Content Sections and themes at hydrated public Data objects from `BuildStructuredContentSectionsAction` and `BuildPublicStructuredContentItemsAction`; no route, Blade query, editor marker, model id, signed URL, or package identifier is emitted in public output.
 - Database changes: package migrations are declared.
 - Settings: no package settings declared.
 - Queues or schedules: none detected in standard package paths.
