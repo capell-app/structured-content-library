@@ -15,7 +15,7 @@ use Capell\StructuredContentLibrary\Support\StructuredContentModelRegistrar;
 use Override;
 use Spatie\LaravelPackageTools\Package;
 
-class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProvider
+final class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProvider
 {
     private const string FRONTEND_CACHE_INVALIDATION_REGISTRY = 'Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry';
 
@@ -53,7 +53,7 @@ class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProv
     #[Override]
     protected function isPackageInstalled(): bool
     {
-        return CapellCore::isPackageInstalled(static::$packageName);
+        return CapellCore::isPackageInstalled(self::$packageName);
     }
 
     private function registerModels(): self
