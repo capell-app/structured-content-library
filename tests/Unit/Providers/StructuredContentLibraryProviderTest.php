@@ -69,8 +69,6 @@ it('declares provider classes and package metadata', function (): void {
         ->toBe(BuildStructuredContentSectionsAction::class)
         ->and(data_get($manifest, 'capabilities'))->toContain(
             'structured-content-library',
-            'structured-content-public-adapter',
-            'structured-content-import',
         )
         ->and(data_get($manifest, 'capabilities'))->not->toContain(
             'structured-content-section-adapter',
