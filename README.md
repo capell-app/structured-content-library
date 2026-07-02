@@ -91,7 +91,7 @@ Screenshot contract: `docs/screenshots.json`.
 - [Capell content language plan](../../docs/CONTENT_LANGUAGE_PLAN.md)
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
-- Related packages: [Content Sections](../content-sections/README.md), [Foundation Theme](../theme-foundation/README.md).
+- Related packages: [Content Sections](../content-sections/README.md), [Foundation Theme](../foundation-theme/README.md).
 - Focused tests: `vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->

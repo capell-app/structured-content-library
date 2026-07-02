@@ -60,7 +60,7 @@ it('declares provider classes and package metadata', function (): void {
             'adapter' => 'theme',
             'actionClass' => BuildPublicStructuredContentItemsAction::class,
             'outputDataClass' => PublicStructuredContentItemData::class,
-            'consumerPackages' => ['capell-app/theme-foundation'],
+            'consumerPackages' => ['capell-app/foundation-theme'],
             'publicOutputSafety' => 'Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted.',
         ])
         ->and(data_get($manifest, 'contributionTraceability.deferredContributions'))->not->toContain('admin-resource')
