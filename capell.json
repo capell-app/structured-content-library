@@ -90,11 +90,7 @@
         "Update:StructuredContentItem",
         "Delete:StructuredContentItem"
     ],
-    "capabilities": [
-        "structured-content-library",
-        "structured-content-public-adapter",
-        "structured-content-import"
-    ],
+    "capabilities": ["structured-content-library"],
     "security": {
         "riskTier": "standard",
         "publicSurface": {
