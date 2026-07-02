@@ -15,5 +15,5 @@ Start at the [package README](../README.md) when deciding whether to install thi
 | Package                                                     | Why it matters                                                                       |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------------------ |
 | [Content Sections](../../content-sections/docs/overview.md) | Can consume structured content as section-ready public data.                         |
-| [Foundation Theme](../../foundation-theme/docs/overview.md) | Natural renderer for services, testimonials, FAQs, and other reusable records.       |
+| [Foundation Theme](../../theme-foundation/docs/overview.md) | Natural renderer for services, testimonials, FAQs, and other reusable records.       |
 | [Block Library](../../block-library/docs/overview.md)       | Complementary reusable presentation layer; structured content remains portable data. |
