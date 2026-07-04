@@ -7,7 +7,7 @@
     "composerRequires": [
         "capell-app/structured-content-library",
         "capell-app/content-sections",
-        "capell-app/foundation-theme"
+        "capell-app/theme-foundation"
     ],
     "entries": [
         {
