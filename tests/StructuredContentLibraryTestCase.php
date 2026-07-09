@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Tests;
 
+use Aimeos\Nestedset\NestedSetServiceProvider;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Macros\BlueprintMacros;
 use Capell\Core\Support\CapellCoreManager;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\ActionServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Override;
@@ -43,6 +44,7 @@ class StructuredContentLibraryTestCase extends TestCase
     protected function getPackageProviders(mixed $app): array
     {
         return [
+            NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,
             StructuredContentLibraryServiceProvider::class,
@@ -55,21 +57,22 @@ class StructuredContentLibraryTestCase extends TestCase
     #[Override]
     protected function defineEnvironment(mixed $app): void
     {
+        /** @var array<string, mixed> $permissionConfig */
+        $permissionConfig = require dirname(__DIR__, 3) . '/vendor/spatie/laravel-permission/config/permission.php';
+
         $app->singleton(CapellCoreManager::class);
 
         Config::set('database.default', 'sqlite');
         Config::set('database.connections.sqlite.database', ':memory:');
         Config::set('database.connections.sqlite.url');
         Config::set('app.key', 'base64:' . base64_encode(str_repeat('x', 32)));
+        Config::set('permission', $permissionConfig);
+        Blueprint::mixin(new BlueprintMacros);
         CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
     }
 
     protected function defineDatabaseMigrations(): void
     {
-        Schema::create('sites', function (Blueprint $table): void {
-            $table->id();
-        });
-
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }
