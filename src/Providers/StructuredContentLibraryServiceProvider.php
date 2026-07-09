@@ -10,8 +10,10 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Capell\StructuredContentLibrary\Policies\StructuredContentItemPolicy;
 use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Capell\StructuredContentLibrary\Support\StructuredContentModelRegistrar;
+use Illuminate\Support\Facades\Gate;
 use Override;
 use Spatie\LaravelPackageTools\Package;
 
@@ -43,6 +45,7 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
 
             $this
                 ->registerModels()
+                ->registerPolicies()
                 ->registerProtectedTables()
                 ->registerAdminResources()
                 ->registerCacheInvalidationDependencies()
@@ -59,6 +62,13 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
     private function registerModels(): self
     {
         StructuredContentModelRegistrar::register();
+
+        return $this;
+    }
+
+    private function registerPolicies(): self
+    {
+        Gate::policy(StructuredContentItem::class, StructuredContentItemPolicy::class);
 
         return $this;
     }

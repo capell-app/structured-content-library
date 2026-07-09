@@ -20,7 +20,7 @@
         "php": "^8.4",
         "capell-app/admin": "^4.0 || 4.x-dev",
         "capell-app/core": "^4.0 || 4.x-dev",
-        "filament/support": "^4.7|^5.2",
+        "filament/support": "^5.7@beta",
         "lorisleiva/laravel-actions": "^2.8",
         "spatie/laravel-data": "^4.5",
         "spatie/laravel-package-tools": "^1.14.1"
