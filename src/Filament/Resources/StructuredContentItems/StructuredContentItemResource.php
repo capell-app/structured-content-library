@@ -228,7 +228,7 @@ class StructuredContentItemResource extends Resource
     #[Override]
     public static function getNavigationGroup(): ?string
     {
-        return __('capell-structured-content-library::admin.navigation_group');
+        return (string) __('capell-admin::navigation.group_content');
     }
 
     #[Override]
