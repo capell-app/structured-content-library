@@ -9,6 +9,7 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -126,6 +127,25 @@ it('allows the same slug in a different site scope', function (): void {
     ));
 
     expect($item->slug)->toBe('customer-story');
+});
+
+it('enforces global slug uniqueness in the database', function (): void {
+    $firstItem = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Global uniqueness',
+    ));
+
+    expect(fn (): bool => DB::table('structured_content_items')->insert([
+        'site_id' => null,
+        'site_scope_key' => 'global',
+        'type' => StructuredContentType::Service->value,
+        'status' => StructuredContentStatus::Draft->value,
+        'title' => 'Concurrent global uniqueness',
+        'slug' => $firstItem->slug,
+        'sort_order' => 0,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]))->toThrow(QueryException::class);
 });
 
 it('reserves slugs used by soft deleted records', function (): void {

@@ -20,6 +20,7 @@ use Override;
 /**
  * @property int $id
  * @property int|null $site_id
+ * @property string $site_scope_key
  * @property StructuredContentType $type
  * @property StructuredContentStatus $status
  * @property string $title
@@ -57,6 +58,7 @@ class StructuredContentItem extends Model
     /** @var list<string> */
     protected $fillable = [
         'site_id',
+        'site_scope_key',
         'type',
         'status',
         'title',
@@ -70,12 +72,30 @@ class StructuredContentItem extends Model
 
     protected static string $factory = StructuredContentItemFactory::class;
 
+    public static function scopeKeyForSiteId(?int $siteId): string
+    {
+        return $siteId === null ? 'global' : (string) $siteId;
+    }
+
     /**
      * @return BelongsTo<Site, $this>
      */
     public function site(): BelongsTo
     {
         return $this->belongsTo(Site::class);
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $item): void {
+            $item->site_scope_key = self::scopeKeyForSiteId($item->site_id);
+        });
+
+        static::updating(function (self $item): void {
+            if ($item->isDirty('site_id')) {
+                $item->site_scope_key = self::scopeKeyForSiteId($item->site_id);
+            }
+        });
     }
 
     /**

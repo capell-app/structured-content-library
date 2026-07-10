@@ -33,6 +33,7 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
             ->hasMigrations([
                 '2026_05_31_000001_create_structured_content_items_table',
                 '2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table',
+                '2026_07_10_000001_add_normalized_scope_key_to_structured_content_items',
             ]);
     }
 
