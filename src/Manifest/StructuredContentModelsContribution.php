@@ -10,6 +10,6 @@ final class StructuredContentModelsContribution implements ExtensionContribution
 {
     public static function compatibleCapellApiVersion(): string
     {
-        return '^0.0';
+        return '^4.0';
     }
 }
