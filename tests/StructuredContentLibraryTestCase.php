@@ -9,6 +9,7 @@ use Capell\Core\Facades\CapellCore;
 use Capell\Core\Macros\BlueprintMacros;
 use Capell\Core\Support\CapellCoreManager;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
+use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -35,6 +36,14 @@ spl_autoload_register(function (string $class): void {
 class StructuredContentLibraryTestCase extends TestCase
 {
     use RefreshDatabase;
+
+    #[Override]
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->actingAs(new StructuredContentGlobalTestUser);
+    }
 
     /**
      * @param  Application  $app

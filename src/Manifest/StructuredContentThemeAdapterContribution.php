@@ -12,7 +12,7 @@ final class StructuredContentThemeAdapterContribution implements ExtensionContri
 {
     public static function compatibleCapellApiVersion(): string
     {
-        return '^0.0';
+        return '^4.0';
     }
 
     public static function adapterKey(): string

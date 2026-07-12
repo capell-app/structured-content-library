@@ -8,9 +8,13 @@ use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -108,9 +112,15 @@ it('uniques generated slugs within the same type and site scope', function (): v
 });
 
 it('allows the same slug in a different site scope', function (): void {
+    Schema::create('users', function (Blueprint $table): void {
+        $table->id();
+    });
+    DB::table('blueprints')->insert(['id' => 1, 'name' => 'Site', 'type' => 'site', 'key' => 'site', 'created_at' => now(), 'updated_at' => now()]);
+    DB::table('languages')->insert(['id' => 1, 'name' => 'English', 'code' => 'en', 'created_at' => now(), 'updated_at' => now()]);
+    DB::table('themes')->insert(['id' => 1, 'name' => 'Test', 'blueprint_id' => 1, 'key' => 'test', 'created_at' => now(), 'updated_at' => now()]);
     DB::table('sites')->insert([
-        ['id' => 1],
-        ['id' => 2],
+        ['id' => 1, 'name' => 'One', 'blueprint_id' => 1, 'theme_id' => 1, 'language_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+        ['id' => 2, 'name' => 'Two', 'blueprint_id' => 1, 'theme_id' => 1, 'language_id' => 1, 'created_at' => now(), 'updated_at' => now()],
     ]);
 
     StructuredContentItem::factory()->create([
@@ -146,6 +156,29 @@ it('enforces global slug uniqueness in the database', function (): void {
         'created_at' => now(),
         'updated_at' => now(),
     ]))->toThrow(QueryException::class);
+});
+
+it('rejects a scoped actor creating content for another site or global scope', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser(global: false, assignedSiteIds: [10]));
+
+    $data = new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        status: StructuredContentStatus::Draft,
+        title: 'Foreign service',
+        content: '<p>Denied</p>',
+        siteId: 20,
+    );
+
+    expect(fn (): StructuredContentItem => CreateStructuredContentItemAction::run($data))
+        ->toThrow(AuthorizationException::class);
+
+    expect(fn (): StructuredContentItem => CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        status: StructuredContentStatus::Draft,
+        title: 'Global service',
+        content: '<p>Denied</p>',
+        siteId: null,
+    )))->toThrow(AuthorizationException::class);
 });
 
 it('reserves slugs used by soft deleted records', function (): void {

@@ -25,6 +25,7 @@ class UpdateStructuredContentItemAction
 
     public function handle(StructuredContentItem $item, StructuredContentItemData $data): StructuredContentItem
     {
+        AuthorizeStructuredContentMutationAction::run($item, $data->siteId);
         $title = trim($data->title);
 
         if ($title === '') {

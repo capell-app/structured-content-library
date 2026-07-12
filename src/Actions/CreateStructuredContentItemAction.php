@@ -21,6 +21,7 @@ class CreateStructuredContentItemAction
 
     public function handle(StructuredContentItemData $data): StructuredContentItem
     {
+        AuthorizeStructuredContentMutationAction::run(null, $data->siteId);
         $title = trim($data->title);
 
         if ($title === '') {
