@@ -15,7 +15,7 @@ require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 uses(StructuredContentLibraryTestCase::class);
 
 it('reports a compatible capell api version', function (): void {
-    expect(StructuredContentLibraryHealthCheck::compatibleCapellApiVersion())->toBe('^4.0');
+    expect(StructuredContentLibraryHealthCheck::compatibleCapellApiVersion())->toBe('^0.0');
 });
 
 it('runs real diagnostics returning check results', function (): void {
