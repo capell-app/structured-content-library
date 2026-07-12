@@ -4,8 +4,8 @@
     "slug": "structured-content-library",
     "displayName": "Structured Content Library",
     "kind": "package",
-    "capellApiVersion": "^4.0",
-    "version": "1.x-dev",
+    "capellApiVersion": "^0.0",
+    "version": "0.0.x-dev",
     "description": "Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.",
     "product": {
         "group": "Capell Foundation",

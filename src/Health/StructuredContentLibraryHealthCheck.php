@@ -20,7 +20,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
 
     public static function compatibleCapellApiVersion(): string
     {
-        return '^4.0';
+        return '^0.0';
     }
 
     /**
