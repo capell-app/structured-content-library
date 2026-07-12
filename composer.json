@@ -1,0 +1,58 @@
+{
+    "name": "capell-app/structured-content-library",
+    "description": "Typed, portable content records (testimonials, case studies, team, FAQs, services…) that Capell themes and packages render safely.",
+    "keywords": [
+        "capell",
+        "structured-content",
+        "laravel",
+        "cms"
+    ],
+    "homepage": "https://github.com/capell-app/structured-content-library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Howdu",
+            "email": "capell.app26@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "capell-app/admin": "^0.0.4 || 0.0.x-dev",
+        "capell-app/core": "^0.0.4 || 0.0.x-dev",
+        "filament/support": "^5.6.8 <5.7.0-beta",
+        "lorisleiva/laravel-actions": "^2.8",
+        "spatie/laravel-data": "^4.5",
+        "spatie/laravel-package-tools": "^1.14.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Capell\\StructuredContentLibrary\\": "src/",
+            "Capell\\StructuredContentLibrary\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Capell\\StructuredContentLibrary\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-main": "0.0.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "prefer-stable": true,
+    "type": "library",
+    "support": {
+        "source": "https://github.com/capell-app/capell-packages",
+        "docs": "https://docs.capell.app/packages/structured-content-library"
+    }
+}
