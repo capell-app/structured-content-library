@@ -13,9 +13,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('structured_content_items', function (Blueprint $table): void {
-            $table->string('site_scope_key', 20)->default('global')->after('site_id');
-        });
+        if (! Schema::hasTable('structured_content_items')) {
+            return;
+        }
+
+        if (! Schema::hasColumn('structured_content_items', 'site_scope_key')) {
+            Schema::table('structured_content_items', function (Blueprint $table): void {
+                $table->string('site_scope_key', 20)->default('global')->after('site_id');
+            });
+        }
 
         DB::table('structured_content_items')
             ->select(['id', 'site_id'])
@@ -31,18 +37,27 @@ return new class extends Migration
 
         $this->deduplicateScopedSlugs();
 
-        Schema::table('structured_content_items', function (Blueprint $table): void {
-            $table->unique(
-                ['type', 'site_scope_key', 'slug'],
-                'structured_content_type_scope_slug_unique',
-            );
-        });
+        if (! Schema::hasIndex('structured_content_items', 'structured_content_type_scope_slug_unique')) {
+            Schema::table('structured_content_items', function (Blueprint $table): void {
+                $table->unique(
+                    ['type', 'site_scope_key', 'slug'],
+                    'structured_content_type_scope_slug_unique',
+                );
+            });
+        }
     }
 
     public function down(): void
     {
+        if (! Schema::hasTable('structured_content_items') || ! Schema::hasColumn('structured_content_items', 'site_scope_key')) {
+            return;
+        }
+
         Schema::table('structured_content_items', function (Blueprint $table): void {
-            $table->dropUnique('structured_content_type_scope_slug_unique');
+            if (Schema::hasIndex('structured_content_items', 'structured_content_type_scope_slug_unique')) {
+                $table->dropUnique('structured_content_type_scope_slug_unique');
+            }
+
             $table->dropColumn('site_scope_key');
         });
     }
