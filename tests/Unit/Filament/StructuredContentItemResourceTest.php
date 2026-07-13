@@ -145,6 +145,7 @@ it('registers the structured content item policy for the Filament resource model
 
 /**
  * @param  list<string>  $permissions
+ * @param  SupportCollection<int, int>|null  $assignedSiteIds
  */
 function structuredContentPolicyActor(array $permissions = [], ?SupportCollection $assignedSiteIds = null): User
 {

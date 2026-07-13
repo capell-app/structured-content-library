@@ -7,20 +7,14 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
-use Illuminate\Support\Facades\DB;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 
 uses(StructuredContentLibraryTestCase::class);
 
-function createStructuredContentLibrarySite(int $suffix): int
-{
-    return (int) DB::table('sites')->insertGetId([]);
-}
-
 it('lists published global and site-specific items by type in display order', function (): void {
-    $siteId = createStructuredContentLibrarySite(1);
-    $otherSiteId = createStructuredContentLibrarySite(2);
+    $siteId = $this->createStructuredContentSite('Structured content site 1');
+    $otherSiteId = $this->createStructuredContentSite('Structured content site 2');
 
     StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
         'title' => 'Global service',

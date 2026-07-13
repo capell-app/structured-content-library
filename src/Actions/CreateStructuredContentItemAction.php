@@ -13,6 +13,7 @@ use Illuminate\Validation\ValidationException;
 use LogicException;
 use Lorisleiva\Actions\Concerns\AsObject;
 
+/** @method static StructuredContentItem run(StructuredContentItemData $data) */
 class CreateStructuredContentItemAction
 {
     use AsObject;

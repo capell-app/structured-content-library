@@ -14,6 +14,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Lorisleiva\Actions\ActionServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Override;
@@ -42,7 +44,48 @@ class StructuredContentLibraryTestCase extends TestCase
     {
         parent::setUp();
 
+        if (! Schema::hasTable('users')) {
+            Schema::create('users', function (Blueprint $table): void {
+                $table->id();
+            });
+        }
+
         $this->actingAs(new StructuredContentGlobalTestUser);
+    }
+
+    public function createStructuredContentSite(string $name): int
+    {
+        $timestamp = now();
+        $key = str($name)->slug()->append('-', str()->random(8))->toString();
+        $blueprintId = (int) DB::table('blueprints')->insertGetId([
+            'name' => $name . ' blueprint',
+            'type' => 'theme',
+            'key' => $key,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+        $themeId = (int) DB::table('themes')->insertGetId([
+            'name' => $name . ' theme',
+            'blueprint_id' => $blueprintId,
+            'key' => $key,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+        $languageId = (int) DB::table('languages')->insertGetId([
+            'name' => $name . ' language',
+            'code' => substr($key, 0, 8),
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
+
+        return (int) DB::table('sites')->insertGetId([
+            'name' => $name,
+            'blueprint_id' => $blueprintId,
+            'theme_id' => $themeId,
+            'language_id' => $languageId,
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ]);
     }
 
     /**

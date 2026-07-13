@@ -17,8 +17,8 @@ require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 uses(StructuredContentLibraryTestCase::class);
 
 it('builds section-ready structured content groups for themes and content sections', function (): void {
-    $siteId = (int) DB::table('sites')->insertGetId([]);
-    $otherSiteId = (int) DB::table('sites')->insertGetId([]);
+    $siteId = $this->createStructuredContentSite('Section content');
+    $otherSiteId = $this->createStructuredContentSite('Other section content');
 
     StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
         'site_id' => $siteId,

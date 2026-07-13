@@ -8,15 +8,14 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
 use Illuminate\Support\Facades\Blade;
-use Illuminate\Support\Facades\DB;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 
 uses(StructuredContentLibraryTestCase::class);
 
 it('builds public-safe structured content items for theme and section adapters', function (): void {
-    $siteId = (int) DB::table('sites')->insertGetId([]);
-    $otherSiteId = (int) DB::table('sites')->insertGetId([]);
+    $siteId = $this->createStructuredContentSite('Public content');
+    $otherSiteId = $this->createStructuredContentSite('Other public content');
 
     StructuredContentItem::factory()->published()->type(StructuredContentType::Testimonial)->create([
         'title' => 'Global testimonial',

@@ -59,7 +59,7 @@ it('deduplicates legacy scoped slugs before adding the unique index', function (
         $table->timestamps();
     });
 
-    $siteId = DB::table('sites')->insertGetId([]);
+    $siteId = $this->createStructuredContentSite('Legacy scoped slugs');
 
     DB::table('structured_content_items')->insert([
         [
