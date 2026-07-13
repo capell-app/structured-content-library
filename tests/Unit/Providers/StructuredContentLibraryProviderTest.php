@@ -81,11 +81,11 @@ it('keeps adapter contribution markers aligned with public data actions', functi
     expect(StructuredContentSectionAdapterContribution::adapterKey())->toBe('content-section-adapter')
         ->and(StructuredContentSectionAdapterContribution::actionClass())->toBe(BuildStructuredContentSectionsAction::class)
         ->and(StructuredContentSectionAdapterContribution::outputDataClass())->toBe(StructuredContentSectionData::class)
-        ->and(StructuredContentSectionAdapterContribution::compatibleCapellApiVersion())->toBe('^4.0')
+        ->and(StructuredContentSectionAdapterContribution::compatibleCapellApiVersion())->toBe('^1.0')
         ->and(StructuredContentThemeAdapterContribution::adapterKey())->toBe('theme-adapter')
         ->and(StructuredContentThemeAdapterContribution::actionClass())->toBe(BuildPublicStructuredContentItemsAction::class)
         ->and(StructuredContentThemeAdapterContribution::outputDataClass())->toBe(PublicStructuredContentItemData::class)
-        ->and(StructuredContentThemeAdapterContribution::compatibleCapellApiVersion())->toBe('^4.0');
+        ->and(StructuredContentThemeAdapterContribution::compatibleCapellApiVersion())->toBe('^1.0');
 });
 
 it('declares the marketplace screenshot contract without promoting mock captures', function (): void {

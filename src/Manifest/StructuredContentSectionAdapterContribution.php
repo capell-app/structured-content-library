@@ -12,7 +12,7 @@ final class StructuredContentSectionAdapterContribution implements ExtensionCont
 {
     public static function compatibleCapellApiVersion(): string
     {
-        return '^4.0';
+        return '^1.0';
     }
 
     public static function adapterKey(): string
