@@ -29,6 +29,10 @@ Status details:
 
 Screenshot contract: `docs/screenshots.json`.
 
+![Structured content item list](docs/screenshots/structured-content-list.png)
+
+![Structured content create form](docs/screenshots/structured-content-form.png)
+
 - Structured content item list (admin, required).
 - Structured content create form (admin, required).
 - Structured content reusable item edit form (admin, required).
