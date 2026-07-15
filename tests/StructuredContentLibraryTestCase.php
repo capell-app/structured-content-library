@@ -125,6 +125,7 @@ class StructuredContentLibraryTestCase extends TestCase
 
     protected function defineDatabaseMigrations(): void
     {
+        $this->loadMigrationsFrom(dirname(__DIR__, 3) . '/vendor/capell-app/core/database/migrations');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }
