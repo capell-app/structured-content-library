@@ -1,0 +1,39 @@
+{
+    "whatThisPluginAdds": {
+        "text": "Structured Content Library stores reusable case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos as portable records.",
+        "evidence": [
+            "src/Enums/StructuredContentType.php",
+            "src/Models/StructuredContentItem.php",
+            "src/Actions/CreateStructuredContentItemAction.php",
+            "capell.json"
+        ]
+    },
+    "surfaceOutcome": {
+        "text": "Editors maintain structured items in one admin resource. Content Sections and themes receive hydrated public data without querying models from public views.",
+        "evidence": [
+            "src/Manifest/StructuredContentItemResourceContribution.php",
+            "src/Actions/BuildStructuredContentSectionsAction.php",
+            "src/Actions/BuildPublicStructuredContentItemsAction.php",
+            "tests/Integration/Actions/BuildPublicStructuredContentItemsActionTest.php"
+        ]
+    },
+    "whyItMatters": {
+        "developers": {
+            "text": "Typed data and adapter contributions provide a package boundary for public records, with portable HTML checks and caching handled before rendering.",
+            "evidence": [
+                "src/Data/PublicStructuredContentItemData.php",
+                "src/Manifest/StructuredContentSectionAdapterContribution.php",
+                "src/Actions/EnsurePortableContentHtmlAction.php",
+                "src/Support/StructuredContentCache.php"
+            ]
+        },
+        "teams": {
+            "text": "Teams can maintain one approved record for repeated people, services, proof, or reference content and reuse it across supported packages.",
+            "evidence": [
+                "src/Actions/UpdateStructuredContentItemAction.php",
+                "src/Actions/BuildPublicStructuredContentPayloadAction.php",
+                "tests/Integration/Actions/BuildStructuredContentSectionsActionTest.php"
+            ]
+        }
+    }
+}

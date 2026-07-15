@@ -73,7 +73,7 @@ class StructuredContentLibraryTestCase extends TestCase
         ]);
         $languageId = (int) DB::table('languages')->insertGetId([
             'name' => $name . ' language',
-            'code' => $key,
+            'code' => substr($key, 0, 8),
             'created_at' => $timestamp,
             'updated_at' => $timestamp,
         ]);
@@ -125,46 +125,7 @@ class StructuredContentLibraryTestCase extends TestCase
 
     protected function defineDatabaseMigrations(): void
     {
-        if (! Schema::hasTable('blueprints')) {
-            Schema::create('blueprints', static function (Blueprint $table): void {
-                $table->id();
-                $table->string('name');
-                $table->string('type');
-                $table->string('key')->unique();
-                $table->timestamps();
-            });
-        }
-
-        if (! Schema::hasTable('themes')) {
-            Schema::create('themes', static function (Blueprint $table): void {
-                $table->id();
-                $table->string('name');
-                $table->unsignedBigInteger('blueprint_id');
-                $table->string('key')->unique();
-                $table->timestamps();
-            });
-        }
-
-        if (! Schema::hasTable('languages')) {
-            Schema::create('languages', static function (Blueprint $table): void {
-                $table->id();
-                $table->string('name');
-                $table->string('code')->unique();
-                $table->timestamps();
-            });
-        }
-
-        if (! Schema::hasTable('sites')) {
-            Schema::create('sites', static function (Blueprint $table): void {
-                $table->id();
-                $table->string('name');
-                $table->unsignedBigInteger('blueprint_id')->nullable();
-                $table->unsignedBigInteger('theme_id')->nullable();
-                $table->unsignedBigInteger('language_id')->nullable();
-                $table->timestamps();
-            });
-        }
-
+        $this->loadMigrationsFrom(dirname(__DIR__, 3) . '/vendor/capell-app/core/database/migrations');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 }
