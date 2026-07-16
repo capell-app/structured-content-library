@@ -11,11 +11,13 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use LogicException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /** @method static StructuredContentItem run(StructuredContentItemData $data) */
 class CreateStructuredContentItemAction
 {
+    use AsFake;
     use AsObject;
 
     private const int MaxUniqueSlugAttempts = 5;

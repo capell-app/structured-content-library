@@ -6,6 +6,7 @@ namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class BuildStructuredContentSectionsAction
 {
+    use AsFake;
     use AsObject;
 
     /**

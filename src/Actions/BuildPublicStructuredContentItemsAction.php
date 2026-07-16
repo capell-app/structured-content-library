@@ -6,6 +6,7 @@ namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -13,6 +14,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 class BuildPublicStructuredContentItemsAction
 {
+    use AsFake;
     use AsObject;
 
     /**

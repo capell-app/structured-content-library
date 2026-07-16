@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Actions;
 
 use Illuminate\Validation\ValidationException;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 class EnsurePortableContentHtmlAction
 {
+    use AsFake;
     use AsObject;
 
     /** @var list<string> */

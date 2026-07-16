@@ -8,6 +8,7 @@ use Capell\StructuredContentLibrary\Data\StructuredContentImportResultData;
 use Capell\StructuredContentLibrary\Data\StructuredContentItemData;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Str;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -15,6 +16,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class ImportStructuredContentItemsAction
 {
+    use AsFake;
     use AsObject;
 
     /**

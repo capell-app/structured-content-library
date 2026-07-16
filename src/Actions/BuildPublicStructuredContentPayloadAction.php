@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
@@ -12,6 +13,7 @@ use Lorisleiva\Actions\Concerns\AsObject;
  */
 final class BuildPublicStructuredContentPayloadAction
 {
+    use AsFake;
     use AsObject;
 
     /**

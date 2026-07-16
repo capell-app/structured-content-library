@@ -7,10 +7,12 @@ namespace Capell\StructuredContentLibrary\Actions;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Collection;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 class ListStructuredContentItemsAction
 {
+    use AsFake;
     use AsObject;
 
     /**

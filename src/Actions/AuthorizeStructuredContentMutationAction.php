@@ -9,12 +9,14 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Gate;
-use Lorisleiva\Actions\Concerns\AsAction;
+use Lorisleiva\Actions\Concerns\AsFake;
+use Lorisleiva\Actions\Concerns\AsObject;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 final class AuthorizeStructuredContentMutationAction
 {
-    use AsAction;
+    use AsFake;
+    use AsObject;
 
     public function handle(?StructuredContentItem $item, ?int $targetSiteId): User
     {

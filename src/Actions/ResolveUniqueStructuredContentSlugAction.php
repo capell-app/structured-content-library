@@ -8,10 +8,12 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
+use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 final class ResolveUniqueStructuredContentSlugAction
 {
+    use AsFake;
     use AsObject;
 
     public function handle(
