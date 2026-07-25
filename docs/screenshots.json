@@ -42,6 +42,7 @@
         },
         {
             "id": "structured-content-theme-rendering",
+            "colorSchemes": ["light"],
             "title": "Structured content reusable item edit form.",
             "package": "structured-content-library",
             "surface": "admin",
