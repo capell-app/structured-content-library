@@ -8,7 +8,8 @@ return [
     'create_action' => 'Create structured content',
     'model_label' => 'structured content item',
     'navigation_group' => 'Content',
-    'navigation_label' => 'Structured content',
+    // Matches the page heading Filament renders from `plural_model_label`.
+    'navigation_label' => 'Structured Content Items',
     'payload_answer' => 'Answer',
     'payload_attribution' => 'Attribution',
     'payload_company' => 'Company',

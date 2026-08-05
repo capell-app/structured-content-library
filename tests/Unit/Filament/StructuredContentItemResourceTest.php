@@ -39,7 +39,7 @@ it('exposes a structured content Filament resource', function (): void {
     expect(StructuredContentItemResource::getModel())->toBe(StructuredContentItem::class)
         ->and(StructuredContentItemResource::shouldRegisterNavigation())->toBeTrue()
         ->and(StructuredContentItemResource::getNavigationGroup())->toBe((string) __('capell-admin::navigation.group_content'))
-        ->and(StructuredContentItemResource::getNavigationLabel())->toBe('Structured content')
+        ->and(StructuredContentItemResource::getNavigationLabel())->toBe('Structured Content Items')
         ->and(StructuredContentItemResource::getModelLabel())->toBe('structured content item')
         ->and(StructuredContentItemResource::getPluralModelLabel())->toBe('structured content items')
         ->and(array_keys($pages))->toBe(['index', 'create', 'edit'])
