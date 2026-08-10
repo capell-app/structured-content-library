@@ -7,6 +7,7 @@ namespace Capell\StructuredContentLibrary\Tests;
 use Aimeos\Nestedset\NestedSetServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Macros\BlueprintMacros;
+use Capell\Core\Providers\CapellServiceProvider;
 use Capell\Core\Support\CapellCoreManager;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Lorisleiva\Actions\ActionServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Override;
@@ -79,6 +81,7 @@ class StructuredContentLibraryTestCase extends TestCase
         ]);
 
         return (int) DB::table('sites')->insertGetId([
+            'uuid' => (string) Str::uuid(),
             'name' => $name,
             'blueprint_id' => $blueprintId,
             'theme_id' => $themeId,
@@ -96,6 +99,7 @@ class StructuredContentLibraryTestCase extends TestCase
     protected function getPackageProviders(mixed $app): array
     {
         return [
+            CapellServiceProvider::class,
             NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,

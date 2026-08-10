@@ -118,6 +118,7 @@ it('declares the marketplace screenshot contract without promoting mock captures
         'structured-content-testimonial-public',
         'structured-content-type-variation',
         'structured-content-empty-state',
+        'structured-content-library-admin-sidebar-menu-open',
     ]);
 });
 

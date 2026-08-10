@@ -102,6 +102,27 @@
             "notes": "Capture the empty list state with the create action when no reusable records exist.",
             "useCase": "A new site owner understands how to start building a reusable content library.",
             "screenshotPath": "packages/structured-content-library/docs/screenshots/structured-content-empty-state.png"
+        },
+        {
+            "id": "structured-content-library-admin-sidebar-menu-open",
+            "title": "Structured content item list with admin sidebar menu open.",
+            "package": "structured-content-library",
+            "surface": "admin",
+            "targetType": "admin-resource",
+            "target": "StructuredContentItemResource",
+            "scenario": "admin-index",
+            "url": "/structured-content-library/structured-content-items",
+            "waitFor": "table",
+            "required": false,
+            "notes": "Capture the item table with type/status badges, reusable content records, and admin actions. Capture this same admin surface with the fully collapsible sidebar opened.",
+            "useCase": "An administrator reviews typed reusable content records before themes render them.",
+            "screenshotPath": "packages/structured-content-library/docs/screenshots/structured-content-library-admin-sidebar-menu-open.png",
+            "beforeWait": [
+                {
+                    "type": "click",
+                    "selector": ".fi-topbar-open-collapse-sidebar-btn"
+                }
+            ]
         }
     ]
 }
