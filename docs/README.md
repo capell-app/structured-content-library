@@ -4,11 +4,11 @@ Start at the [package README](../README.md) when deciding whether to install thi
 
 ## Documents
 
-| Document                                | Use                                                                                       |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- |
-| [Overview](overview.md)                 | Reusable content record types, public adapter boundaries, and current package foundation. |
-| [Improvement plan](improvement-plan.md) | Follow-up product, adapter, and marketplace improvements.                                 |
-| [Screenshot contract](screenshots.json) | Admin resource captures for the package listing and documentation.                        |
+| Document                                | Use                                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [Overview](overview.md)                 | Reusable content record types, public adapter boundaries, and current package foundation.           |
+| Improvement plan                        | Follow-up product, adapter, and marketplace improvements are tracked in the internal Capell ledger. |
+| [Screenshot contract](screenshots.json) | Admin resource captures for the package listing and documentation.                                  |
 
 ## Related Packages
 
