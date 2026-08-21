@@ -8,6 +8,7 @@ use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\StructuredContentLibrary\Console\Commands\SeedStructuredContentScreenshotFixtureCommand;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Policies\StructuredContentItemPolicy;
@@ -30,6 +31,7 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
         $package
             ->name(self::$name)
             ->hasTranslations()
+            ->hasCommand(SeedStructuredContentScreenshotFixtureCommand::class)
             ->hasMigrations([
                 '2026_05_31_000001_create_structured_content_items_table',
                 '2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table',
