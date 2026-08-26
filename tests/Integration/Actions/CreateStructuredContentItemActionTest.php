@@ -76,6 +76,19 @@ it('rejects unsafe summary markup before it can be stored', function (string $su
     'inline event handler' => ['<p onclick="alert(1)">Unsafe summary.</p>'],
 ]);
 
+it('strips an unsafe href scheme from content while preserving a safe link', function (): void {
+    $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(
+        type: StructuredContentType::Service,
+        title: 'Linked service',
+        content: '<p><a href="javascript:alert(document.cookie)">Click</a> and '
+            . '<a href="https://example.com/pricing">visit</a>.</p>',
+    ));
+
+    expect($item->content)->toBe(
+        '<p><a>Click</a> and <a href="https://example.com/pricing">visit</a>.</p>',
+    );
+});
+
 it('defaults published_at when publishing without an explicit date', function (): void {
     $item = CreateStructuredContentItemAction::run(new StructuredContentItemData(
         type: StructuredContentType::Service,

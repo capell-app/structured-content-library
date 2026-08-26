@@ -6,7 +6,6 @@ use Capell\StructuredContentLibrary\Actions\SeedStructuredContentScreenshotFixtu
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
-use RuntimeException;
 
 uses(StructuredContentLibraryTestCase::class);
 

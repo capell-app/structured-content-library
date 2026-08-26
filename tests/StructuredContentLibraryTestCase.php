@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Tests;
 
 use Aimeos\Nestedset\NestedSetServiceProvider;
+use Capell\Admin\Providers\AdminServiceProvider as CapellAdminServiceProvider;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Macros\BlueprintMacros;
 use Capell\Core\Providers\CapellServiceProvider;
 use Capell\Core\Support\CapellCoreManager;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
+use Filament\FilamentServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -103,6 +105,8 @@ class StructuredContentLibraryTestCase extends TestCase
             NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,
+            FilamentServiceProvider::class,
+            CapellAdminServiceProvider::class,
             StructuredContentLibraryServiceProvider::class,
         ];
     }

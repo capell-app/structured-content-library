@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Actions;
 
+use Capell\Core\Support\Security\PublicUrlSanitizer;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -55,7 +56,41 @@ class EnsurePortableContentHtmlAction
             $this->throwPortableContentException($field);
         }
 
-        return $trimmedContent;
+        return $this->stripUnsafeHrefAttributes($trimmedContent, $field);
+    }
+
+    /**
+     * The tag allow-list above lets `<a>` through, but neither strip_tags()
+     * nor the attribute-blocking regex inspects the *value* of a surviving
+     * `href`. Without this pass, `<a href="javascript:...">` is portable
+     * content as far as this action is concerned, and is later rendered raw
+     * via PublicStructuredContentItemData->content. Reuse the platform's
+     * scheme allow-list and drop the whole attribute (not just neutralise
+     * it) when the value fails it.
+     */
+    private function stripUnsafeHrefAttributes(string $content, string $field): string
+    {
+        $sanitisedContent = preg_replace_callback(
+            '/\\s+href\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s>]+)/i',
+            static function (array $matches): string {
+                $rawValue = $matches[1];
+
+                if ($rawValue !== '' && ($rawValue[0] === '"' || $rawValue[0] === '\'')) {
+                    $rawValue = substr($rawValue, 1, -1);
+                }
+
+                $decodedValue = html_entity_decode($rawValue, ENT_QUOTES | ENT_HTML5);
+
+                return PublicUrlSanitizer::sanitize($decodedValue) === null ? '' : $matches[0];
+            },
+            $content,
+        );
+
+        if ($sanitisedContent === null) {
+            $this->throwPortableContentException($field);
+        }
+
+        return $sanitisedContent;
     }
 
     private function throwPortableContentException(string $field): never

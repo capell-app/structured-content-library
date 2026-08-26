@@ -12,6 +12,7 @@ use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\St
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Policies\StructuredContentItemPolicy;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
+use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -141,6 +142,38 @@ it('blocks structured content record access outside assigned sites', function ()
 
 it('registers the structured content item policy for the Filament resource model', function (): void {
     expect(Gate::getPolicyFor(StructuredContentItem::class))->toBeInstanceOf(StructuredContentItemPolicy::class);
+});
+
+it('scopes the resource table query to the assigned site plus global items', function (): void {
+    $firstSiteId = $this->createStructuredContentSite('Resource scope one');
+    $secondSiteId = $this->createStructuredContentSite('Resource scope two');
+
+    $ownSiteItem = StructuredContentItem::factory()->create(['site_id' => $firstSiteId, 'title' => 'Own site item']);
+    $globalItem = StructuredContentItem::factory()->create(['site_id' => null, 'title' => 'Global item']);
+    $otherSiteItem = StructuredContentItem::factory()->create(['site_id' => $secondSiteId, 'title' => 'Other site item']);
+
+    $this->actingAs(new StructuredContentGlobalTestUser(global: false, assignedSiteIds: [$firstSiteId]));
+
+    $visibleIds = StructuredContentItemResource::getEloquentQuery()->pluck('id')->all();
+
+    expect($visibleIds)->toContain($ownSiteItem->id)
+        ->and($visibleIds)->toContain($globalItem->id)
+        ->and($visibleIds)->not->toContain($otherSiteItem->id);
+});
+
+it('does not scope the resource table query for a global actor', function (): void {
+    $firstSiteId = $this->createStructuredContentSite('Resource scope global one');
+    $secondSiteId = $this->createStructuredContentSite('Resource scope global two');
+
+    $firstSiteItem = StructuredContentItem::factory()->create(['site_id' => $firstSiteId, 'title' => 'First site item']);
+    $secondSiteItem = StructuredContentItem::factory()->create(['site_id' => $secondSiteId, 'title' => 'Second site item']);
+
+    $this->actingAs(new StructuredContentGlobalTestUser(global: true));
+
+    $visibleIds = StructuredContentItemResource::getEloquentQuery()->pluck('id')->all();
+
+    expect($visibleIds)->toContain($firstSiteItem->id)
+        ->and($visibleIds)->toContain($secondSiteItem->id);
 });
 
 /**

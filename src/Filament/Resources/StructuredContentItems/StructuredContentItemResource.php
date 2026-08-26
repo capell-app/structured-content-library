@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems;
 
 use BackedEnum;
+use Capell\Admin\Support\SiteScope;
 use Capell\Core\Facades\CapellCore;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
@@ -34,7 +35,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Override;
 
@@ -214,9 +217,11 @@ class StructuredContentItemResource extends Resource
     #[Override]
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->withoutGlobalScopes([
-            SoftDeletingScope::class,
-        ]);
+        return self::applySiteScope(
+            parent::getEloquentQuery()->withoutGlobalScopes([
+                SoftDeletingScope::class,
+            ]),
+        );
     }
 
     #[Override]
@@ -330,6 +335,35 @@ class StructuredContentItemResource extends Resource
                 'logo_alt',
             ],
         };
+    }
+
+    /**
+     * StructuredContentItem carries a nullable site_id (null means visible
+     * portfolio-wide, mirroring the model's own visibleToSite() scope and
+     * the policy's canUseRecordSite()). Without this, the admin table lists
+     * every site's items to any actor with view_any, regardless of which
+     * site(s) they are assigned to.
+     *
+     * @param  Builder<Model>  $query
+     * @return Builder<Model>
+     */
+    private static function applySiteScope(Builder $query): Builder
+    {
+        $actor = auth()->user();
+
+        if (! $actor instanceof Authenticatable || SiteScope::isGlobalActor($actor)) {
+            return $query;
+        }
+
+        $assignedSiteIds = $actor->getAssignedSiteIds();
+
+        return $query->where(function (Builder $query) use ($assignedSiteIds): void {
+            $query->whereNull('site_id');
+
+            if ($assignedSiteIds->isNotEmpty()) {
+                $query->orWhereIn('site_id', $assignedSiteIds);
+            }
+        });
     }
 
     /**
