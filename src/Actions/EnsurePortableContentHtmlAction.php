@@ -75,7 +75,7 @@ class EnsurePortableContentHtmlAction
             static function (array $matches): string {
                 $rawValue = $matches[1];
 
-                if ($rawValue !== '' && ($rawValue[0] === '"' || $rawValue[0] === '\'')) {
+                if ($rawValue[0] === '"' || $rawValue[0] === '\'') {
                     $rawValue = substr($rawValue, 1, -1);
                 }
 
