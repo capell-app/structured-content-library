@@ -10,8 +10,6 @@ Structured Content Library stores reusable case studies, testimonials, team memb
 
 Editors maintain structured items in one admin resource. Content Sections and themes receive hydrated public data without querying models from public views.
 
-Evidence: [`src/Enums/StructuredContentType.php`](src/Enums/StructuredContentType.php), [`src/Models/StructuredContentItem.php`](src/Models/StructuredContentItem.php), [`src/Actions/CreateStructuredContentItemAction.php`](src/Actions/CreateStructuredContentItemAction.php), [`capell.json`](capell.json), [`src/Manifest/StructuredContentItemResourceContribution.php`](src/Manifest/StructuredContentItemResourceContribution.php), [`src/Actions/BuildStructuredContentSectionsAction.php`](src/Actions/BuildStructuredContentSectionsAction.php), [`src/Actions/BuildPublicStructuredContentItemsAction.php`](src/Actions/BuildPublicStructuredContentItemsAction.php), [`tests/Integration/Actions/BuildPublicStructuredContentItemsActionTest.php`](tests/Integration/Actions/BuildPublicStructuredContentItemsActionTest.php).
-
 Status details:
 
 - Status: Available
@@ -26,8 +24,6 @@ Status details:
 **For developers:** Typed data and adapter contributions provide a package boundary for public records, with portable HTML checks and caching handled before rendering.
 
 **For teams:** Teams can maintain one approved record for repeated people, services, proof, or reference content and reuse it across supported packages.
-
-Evidence: [`src/Data/PublicStructuredContentItemData.php`](src/Data/PublicStructuredContentItemData.php), [`src/Manifest/StructuredContentSectionAdapterContribution.php`](src/Manifest/StructuredContentSectionAdapterContribution.php), [`src/Actions/EnsurePortableContentHtmlAction.php`](src/Actions/EnsurePortableContentHtmlAction.php), [`src/Support/StructuredContentCache.php`](src/Support/StructuredContentCache.php), [`src/Actions/UpdateStructuredContentItemAction.php`](src/Actions/UpdateStructuredContentItemAction.php), [`src/Actions/BuildPublicStructuredContentPayloadAction.php`](src/Actions/BuildPublicStructuredContentPayloadAction.php), [`tests/Integration/Actions/BuildStructuredContentSectionsActionTest.php`](tests/Integration/Actions/BuildStructuredContentSectionsActionTest.php).
 
 ## Screens And Workflow
 
@@ -169,12 +165,13 @@ Screenshot contract: `docs/screenshots.json`.
 ## Quick Start
 
 1. Install the package: `composer require capell-app/structured-content-library`.
-2. Open the package admin surface at `/structured-content-library/structured-content-items` and confirm Structured Content Library is available.
+2. Open the package admin surface at `/admin/structured-content-library/structured-content-items` and confirm Structured Content Library is available.
 
 ## Next Steps
 
 - [Package docs](docs/README.md)
 - [Overview](docs/overview.md)
+- [Worked extension examples](docs/extension-contracts.md)
 - [Troubleshooting](#troubleshooting)
 - [Screenshot contract](docs/screenshots.json)
 - [Marketplace assets](docs/assets/marketplace/)
@@ -182,6 +179,5 @@ Screenshot contract: `docs/screenshots.json`.
 - [Capell documentation design system](../../docs/DESIGN_SYSTEM.md)
 - [Capell and package ERD notes](../../docs/erd/capell-and-package-erds.md)
 - Related packages: [Content Sections](../content-sections/README.md), [Theme Foundation](../theme-foundation/README.md).
-- Focused tests: `vendor/bin/pest packages/structured-content-library/tests --configuration=phpunit.xml`.
 
 <!-- prettier-ignore-end -->
