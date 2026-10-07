@@ -8,6 +8,7 @@ use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Console\Commands\SeedStructuredContentScreenshotFixtureCommand;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
@@ -20,12 +21,13 @@ use Spatie\LaravelPackageTools\Package;
 
 final class StructuredContentLibraryServiceProvider extends AbstractPackageServiceProvider
 {
-    private const string FRONTEND_CACHE_INVALIDATION_REGISTRY = 'Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry';
+    private const string FRONTEND_CACHE_INVALIDATION_REGISTRY = CacheInvalidationRegistry::class;
 
     public static string $name = 'capell-structured-content-library';
 
     public static string $packageName = 'capell-app/structured-content-library';
 
+    #[Override]
     public function configurePackage(Package $package): void
     {
         $package
@@ -40,27 +42,16 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
             ]);
     }
 
-    public function packageRegistered(): void
-    {
-        $this->app->booted(function (): void {
-            if (! $this->isPackageInstalled()) {
-                return;
-            }
-
-            $this
-                ->registerModels()
-                ->registerPolicies()
-                ->registerProtectedTables()
-                ->registerAdminResources()
-                ->registerCacheInvalidationDependencies()
-                ->registerStructuredContentCacheEvents();
-        });
-    }
-
     #[Override]
-    protected function isPackageInstalled(): bool
+    protected function bootInstalledRuntime(): void
     {
-        return CapellCore::isPackageInstalled(self::$packageName);
+        $this
+            ->registerModels()
+            ->registerPolicies()
+            ->registerProtectedTables()
+            ->registerAdminResources()
+            ->registerCacheInvalidationDependencies()
+            ->registerStructuredContentCacheEvents();
     }
 
     private function registerModels(): self

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Manifest\ManifestValidator;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction;
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
@@ -142,7 +143,9 @@ it('declares all first-class reusable content concepts', function (): void {
 it('registers models and protected tables when installed', function (): void {
     CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
 
-    (new StructuredContentLibraryServiceProvider(app()))->packageRegistered();
+    $provider = new StructuredContentLibraryServiceProvider(app());
+    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
+    $bootInstalledRuntime->invoke($provider);
 
     expect(CapellCore::getModels())->toContain(StructuredContentItem::class)
         ->and(CapellCore::getProtectedTables())->toContain('structured_content_items');
@@ -164,10 +167,39 @@ it('registers frontend cache invalidation dependencies when the registry is avai
         }
     };
 
-    app()->instance('Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry', $registry);
+    app()->instance(CacheInvalidationRegistry::class, $registry);
 
-    (new StructuredContentLibraryServiceProvider(app()))->packageRegistered();
+    $provider = new StructuredContentLibraryServiceProvider(app());
+    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
+    $bootInstalledRuntime->invoke($provider);
 
     expect($registry->dependencies[StructuredContentItem::class] ?? null)
         ->toBe('structured-content-library-*');
+});
+
+it('registers frontend cache invalidation dependencies exactly once during late activation', function (): void {
+    $registry = new class
+    {
+        public int $registrations = 0;
+
+        /**
+         * @param  class-string  $modelClass
+         * @param  string|array<int, string>  $cachePatterns
+         */
+        public function registerDependency(string $modelClass, string|array $cachePatterns): void
+        {
+            $this->registrations++;
+        }
+    };
+
+    app()->instance(CacheInvalidationRegistry::class, $registry);
+    CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
+
+    $provider = new StructuredContentLibraryServiceProvider(app());
+    $provider->packageRegistered();
+
+    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
+    $bootInstalledRuntime->invoke($provider);
+
+    expect($registry->registrations)->toBe(1);
 });

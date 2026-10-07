@@ -1,0 +1,63 @@
+{
+    "version": 3,
+    "package": "structured-content-library",
+    "scenarios": {
+        "default": {
+            "source": {
+                "ref": "origin/main",
+                "commit": "646068b2d21e233ea517c342d62bc0eca1762192",
+                "providers": {
+                    "Providers/StructuredContentLibraryServiceProvider.php": "158ba9c724ba7228c38e53159da6413d43621deb60913032d53d2d3e7faa65c8"
+                }
+            },
+            "disabledContributions": [],
+            "surfaces": {
+                "routes": [],
+                "livewire": [],
+                "filament": [
+                    "resource:Capell\\StructuredContentLibrary\\Filament\\Resources\\StructuredContentItems\\StructuredContentItemResource"
+                ],
+                "listeners": [
+                    "eloquent.creating: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|Capell\\StructuredContentLibrary\\Models\\StructuredContentItem(self $item):void",
+                    "eloquent.deleted: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void",
+                    "eloquent.forceDeleted: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void",
+                    "eloquent.restored: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void",
+                    "eloquent.saved: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void",
+                    "eloquent.updating: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem|Capell\\StructuredContentLibrary\\Models\\StructuredContentItem(self $item):void"
+                ],
+                "gates": [],
+                "policies": [
+                    "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem=Capell\\StructuredContentLibrary\\Policies\\StructuredContentItemPolicy"
+                ],
+                "commands": [
+                    "capell:structured-content-library-screenshot-fixture"
+                ],
+                "view-namespaces": ["capell-structured-content-library"],
+                "config-keys": [],
+                "migrations": [
+                    "2026_05_31_000001_create_structured_content_items_table",
+                    "2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table",
+                    "2026_07_10_000001_add_normalized_scope_key_to_structured_content_items"
+                ]
+            },
+            "uninstalledSurfaces": {
+                "routes": [],
+                "livewire": [],
+                "filament": [],
+                "listeners": [],
+                "gates": [],
+                "policies": [],
+                "commands": [
+                    "capell:structured-content-library-screenshot-fixture"
+                ],
+                "view-namespaces": ["capell-structured-content-library"],
+                "config-keys": [],
+                "migrations": [
+                    "2026_05_31_000001_create_structured_content_items_table",
+                    "2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table",
+                    "2026_07_10_000001_add_normalized_scope_key_to_structured_content_items"
+                ]
+            }
+        }
+    }
+}
