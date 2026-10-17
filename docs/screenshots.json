@@ -114,7 +114,8 @@
                     "command": "capell:structured-content-library-screenshot-fixture",
                     "args": ["--force"]
                 }
-            }
+            },
+            "expectedState": "empty"
         },
         {
             "id": "structured-content-library-admin-sidebar-menu-open",

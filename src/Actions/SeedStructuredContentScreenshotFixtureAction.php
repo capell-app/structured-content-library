@@ -18,17 +18,9 @@ final class SeedStructuredContentScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
-        $slugs = [self::Slug, 'capell-screenshot-team-member', 'capell-screenshot-faq', 'capell-screenshot-service', 'capell-screenshot-location', 'capell-screenshot-partner'];
-
-        (new StructuredContentItem)->getConnection()->transaction(static function () use ($slugs): void {
-            throw_if(
-                StructuredContentItem::query()->whereNotIn('slug', $slugs)->orWhereNull('slug')->exists()
-                    || StructuredContentItem::query()->whereNotNull('site_id')->exists(),
-                RuntimeException::class,
-                'Refusing to empty a screenshot database containing non-fixture content.',
-            );
-
-            StructuredContentItem::query()->whereIn('slug', $slugs)->delete();
+        (new StructuredContentItem)->getConnection()->transaction(static function (): void {
+            self::assertFixtureOwnership(true);
+            StructuredContentItem::query()->whereIn('slug', array_keys(self::fixtureRows()))->delete();
         });
     }
 
@@ -36,76 +28,82 @@ final class SeedStructuredContentScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
-        /** @var StructuredContentItem $item */
-        $item = (new StructuredContentItem)->getConnection()->transaction(static fn (): StructuredContentItem => StructuredContentItem::withTrashed()->updateOrCreate(
-            [
-                'type' => StructuredContentType::Testimonial,
-                'site_scope_key' => StructuredContentItem::scopeKeyForSiteId(null),
-                'slug' => self::Slug,
-            ],
-            [
-                'site_id' => null,
-                'status' => StructuredContentStatus::Published,
-                'title' => 'A clearer editorial workflow',
-                'summary' => 'A deterministic published testimonial for the authenticated screenshot queue.',
-                'content' => '<p>Our editors can review, refine, and publish reusable content with confidence.</p>',
-                'payload' => new StructuredContentPayloadData(
-                    quote: 'The content workflow gives every team a clear publishing path.',
-                    attribution: 'Morgan Lee',
-                    role: 'Content Operations Lead',
-                    company: 'Northstar Studio',
-                ),
-                'published_at' => now()->subDay(),
-                'sort_order' => 0,
-            ],
-        ));
+        return (new StructuredContentItem)->getConnection()->transaction(static function (): StructuredContentItem {
+            self::assertFixtureOwnership(false);
 
-        // deleted_at is guarded; restoring a fixture must use the model lifecycle.
-        if ($item->trashed()) {
-            $item->restore();
-        }
+            $testimonial = null;
+            foreach (self::fixtureRows() as $slug => [$type, $status, $title, $summary, $content, $payload, $sortOrder]) {
+                $item = StructuredContentItem::withTrashed()->updateOrCreate(
+                    ['type' => $type, 'site_scope_key' => StructuredContentItem::scopeKeyForSiteId(null), 'slug' => $slug],
+                    [
+                        'site_id' => null,
+                        'status' => $status,
+                        'title' => $title,
+                        'summary' => $summary,
+                        'content' => $content,
+                        'payload' => $payload,
+                        'published_at' => $status === StructuredContentStatus::Published ? now()->subDays($sortOrder + 1) : null,
+                        'sort_order' => $sortOrder,
+                    ],
+                );
 
-        self::seedSupportingItems();
+                if ($item->trashed()) {
+                    $item->restore();
+                }
 
-        return $item;
+                if ($slug === self::Slug) {
+                    $testimonial = $item;
+                }
+            }
+
+            if (! $testimonial instanceof StructuredContentItem) {
+                throw new RuntimeException('The screenshot testimonial was not seeded.');
+            }
+
+            return $testimonial;
+        });
     }
 
     /**
-     * The testimonial above stays the first record (the edit capture opens it);
-     * these extra typed records keep the admin index from rendering near-empty.
+     * @return array<string, array{StructuredContentType, StructuredContentStatus, string, string, string, StructuredContentPayloadData, int}>
      */
-    private static function seedSupportingItems(): void
+    private static function fixtureRows(): array
     {
-        $items = [
-            [StructuredContentType::TeamMember, 'capell-screenshot-team-member', StructuredContentStatus::Published, 'Priya Raman', 'Head of editorial operations.', new StructuredContentPayloadData(role: 'Head of Editorial Operations', company: 'Northstar Studio')],
-            [StructuredContentType::Faq, 'capell-screenshot-faq', StructuredContentStatus::Published, 'Can editors schedule updates?', 'Scheduling answer for the help section.', new StructuredContentPayloadData(question: 'Can editors schedule updates?', answer: 'Yes. Every item can be scheduled and reviewed before it goes live.')],
-            [StructuredContentType::Service, 'capell-screenshot-service', StructuredContentStatus::Draft, 'Content migration support', 'Guided migration from a legacy CMS.', new StructuredContentPayloadData(subtitle: 'Guided migration from a legacy CMS')],
-            [StructuredContentType::Location, 'capell-screenshot-location', StructuredContentStatus::Published, 'Manchester studio', 'Our northern office.', new StructuredContentPayloadData(streetAddress: '12 Tariff Street', locality: 'Manchester', postalCode: 'M1 2FF', countryCode: 'GB')],
-            [StructuredContentType::Partner, 'capell-screenshot-partner', StructuredContentStatus::Archived, 'Brightline Agency', 'Former implementation partner.', new StructuredContentPayloadData(url: 'https://brightline.example.test')],
+        return [
+            self::Slug => [StructuredContentType::Testimonial, StructuredContentStatus::Published, 'A clearer editorial workflow', 'A deterministic published testimonial for the authenticated screenshot queue.', '<p>Our editors can review, refine, and publish reusable content with confidence.</p>', new StructuredContentPayloadData(quote: 'The content workflow gives every team a clear publishing path.', attribution: 'Morgan Lee', role: 'Content Operations Lead', company: 'Northstar Studio'), 0],
+            'capell-screenshot-team-member' => [StructuredContentType::TeamMember, StructuredContentStatus::Published, 'Priya Raman', 'Head of editorial operations.', '<p>Head of editorial operations.</p>', new StructuredContentPayloadData(role: 'Head of Editorial Operations', company: 'Northstar Studio'), 1],
+            'capell-screenshot-faq' => [StructuredContentType::Faq, StructuredContentStatus::Published, 'Can editors schedule updates?', 'Scheduling answer for the help section.', '<p>Scheduling answer for the help section.</p>', new StructuredContentPayloadData(question: 'Can editors schedule updates?', answer: 'Yes. Every item can be scheduled and reviewed before it goes live.'), 2],
+            'capell-screenshot-service' => [StructuredContentType::Service, StructuredContentStatus::Draft, 'Content migration support', 'Guided migration from a legacy CMS.', '<p>Guided migration from a legacy CMS.</p>', new StructuredContentPayloadData(subtitle: 'Guided migration from a legacy CMS'), 3],
+            'capell-screenshot-location' => [StructuredContentType::Location, StructuredContentStatus::Published, 'Manchester studio', 'Our northern office.', '<p>Our northern office.</p>', new StructuredContentPayloadData(streetAddress: '12 Tariff Street', locality: 'Manchester', postalCode: 'M1 2FF', countryCode: 'GB'), 4],
+            'capell-screenshot-partner' => [StructuredContentType::Partner, StructuredContentStatus::Archived, 'Brightline Agency', 'Former implementation partner.', '<p>Former implementation partner.</p>', new StructuredContentPayloadData(url: 'https://brightline.example.test'), 5],
         ];
+    }
 
-        foreach ($items as $sortOrder => [$type, $slug, $status, $title, $summary, $payload]) {
-            $item = StructuredContentItem::withTrashed()->updateOrCreate(
-                [
-                    'type' => $type,
-                    'site_scope_key' => StructuredContentItem::scopeKeyForSiteId(null),
-                    'slug' => $slug,
-                ],
-                [
-                    'site_id' => null,
-                    'status' => $status,
-                    'title' => $title,
-                    'summary' => $summary,
-                    'content' => '<p>' . $summary . '</p>',
-                    'payload' => $payload,
-                    'published_at' => $status === StructuredContentStatus::Published ? now()->subDays($sortOrder + 2) : null,
-                    'sort_order' => $sortOrder + 1,
-                ],
-            );
+    private static function assertFixtureOwnership(bool $requireOnlyFixtures): void
+    {
+        $rows = self::fixtureRows();
+        $existing = StructuredContentItem::withTrashed()
+            ->unless($requireOnlyFixtures, static fn ($query) => $query->whereIn('slug', array_keys($rows)))
+            ->get();
 
-            if ($item->trashed()) {
-                $item->restore();
+        foreach ($existing as $item) {
+            $expected = $rows[$item->slug ?? ''] ?? null;
+            if ($expected === null) {
+                throw new RuntimeException('Refusing to empty a screenshot database containing non-fixture content.');
             }
+
+            [$type, , $title, $summary, $content, $payload] = $expected;
+            throw_if(
+                $item->type !== $type
+                    || $item->site_id !== null
+                    || $item->site_scope_key !== StructuredContentItem::scopeKeyForSiteId(null)
+                    || $item->title !== $title
+                    || $item->summary !== $summary
+                    || $item->content !== $content
+                    || $item->payload?->toArray() !== $payload->toArray(),
+                RuntimeException::class,
+                'Structured content screenshot slug belongs to another record.',
+            );
         }
     }
 
@@ -123,6 +121,14 @@ final class SeedStructuredContentScreenshotFixtureAction
                 && $basePath === $appPath,
             RuntimeException::class,
             'Structured Content Library screenshot fixtures require the explicit disposable local screenshot environment.',
+        );
+
+        $captureEmail = getenv('CAPELL_SCREENSHOT_ADMIN_EMAIL') ?: (getenv('CAPELL_ADMIN_EMAIL') ?: 'admin@example.com');
+        $authenticated = auth()->user();
+        throw_if(
+            $authenticated !== null && data_get($authenticated, 'email') !== $captureEmail,
+            RuntimeException::class,
+            'Screenshot fixtures require the selected capture actor.',
         );
     }
 

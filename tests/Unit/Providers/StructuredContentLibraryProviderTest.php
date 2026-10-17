@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Manifest\ManifestValidator;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Frontend\Data\CacheInvalidationRule;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction;
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
@@ -19,6 +20,8 @@ use Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContri
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Capell\Tests\Support\PackageInstallationTestCase;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\File;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -140,66 +143,39 @@ it('declares all first-class reusable content concepts', function (): void {
     ]);
 });
 
-it('registers models and protected tables when installed', function (): void {
-    CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
+it('makes structured content models and tables available after installation', function (): void {
+    PackageInstallationTestCase::assertInProcessInstallation('structured-content-library', function (Application $app, Closure $refresh): void {
+        expect(CapellCore::getModels())->not->toContain(StructuredContentItem::class)
+            ->and(CapellCore::getProtectedTables())->not->toContain('structured_content_items');
 
-    $provider = new StructuredContentLibraryServiceProvider(app());
-    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
-    $bootInstalledRuntime->invoke($provider);
+        $refresh();
 
-    expect(CapellCore::getModels())->toContain(StructuredContentItem::class)
-        ->and(CapellCore::getProtectedTables())->toContain('structured_content_items');
+        expect(CapellCore::getModels())->toContain(StructuredContentItem::class)
+            ->and(CapellCore::getProtectedTables())->toContain('structured_content_items');
+    });
 });
 
-it('registers frontend cache invalidation dependencies when the registry is available', function (): void {
-    $registry = new class
-    {
-        /** @var array<class-string, string|array<int, string>> */
-        public array $dependencies = [];
+it('invalidates structured content cache entries after installation', function (): void {
+    PackageInstallationTestCase::assertInProcessInstallation('structured-content-library', function (Application $app, Closure $refresh): void {
+        $registry = $app->make(CacheInvalidationRegistry::class);
+        expect($registry->planForModel(StructuredContentItem::class)->rules)->toBeEmpty();
 
-        /**
-         * @param  class-string  $modelClass
-         * @param  string|array<int, string>  $cachePatterns
-         */
-        public function registerDependency(string $modelClass, string|array $cachePatterns): void
-        {
-            $this->dependencies[$modelClass] = $cachePatterns;
-        }
-    };
+        $refresh();
 
-    app()->instance(CacheInvalidationRegistry::class, $registry);
-
-    $provider = new StructuredContentLibraryServiceProvider(app());
-    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
-    $bootInstalledRuntime->invoke($provider);
-
-    expect($registry->dependencies[StructuredContentItem::class] ?? null)
-        ->toBe('structured-content-library-*');
+        expect($registry->planForModel(StructuredContentItem::class)->rules)
+            ->toEqual([CacheInvalidationRule::invalidatePattern('structured-content-library-*')]);
+    });
 });
 
-it('registers frontend cache invalidation dependencies exactly once during late activation', function (): void {
-    $registry = new class
-    {
-        public int $registrations = 0;
+it('keeps cache invalidation plans stable across repeated runtime refreshes', function (): void {
+    PackageInstallationTestCase::assertInProcessInstallation('structured-content-library', function (Application $app, Closure $refresh): void {
+        $refresh();
+        $registry = $app->make(CacheInvalidationRegistry::class);
+        $plan = $registry->planForModel(StructuredContentItem::class);
+        expect($plan->rules)->toEqual([CacheInvalidationRule::invalidatePattern('structured-content-library-*')]);
 
-        /**
-         * @param  class-string  $modelClass
-         * @param  string|array<int, string>  $cachePatterns
-         */
-        public function registerDependency(string $modelClass, string|array $cachePatterns): void
-        {
-            $this->registrations++;
-        }
-    };
+        $refresh();
 
-    app()->instance(CacheInvalidationRegistry::class, $registry);
-    CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
-
-    $provider = new StructuredContentLibraryServiceProvider(app());
-    $provider->packageRegistered();
-
-    $bootInstalledRuntime = new ReflectionMethod(StructuredContentLibraryServiceProvider::class, 'bootInstalledRuntime');
-    $bootInstalledRuntime->invoke($provider);
-
-    expect($registry->registrations)->toBe(1);
+        expect($registry->planForModel(StructuredContentItem::class))->toEqual($plan);
+    });
 });
