@@ -8,6 +8,7 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Facades\DB;
 
 uses(StructuredContentLibraryTestCase::class);
 
@@ -155,4 +156,17 @@ it('rejects a different physical checkout and production even when fixture mode 
             putenv($previous[$index] === false ? $key : $key . '=' . $previous[$index]);
         }
     }
+});
+
+it('refuses an identical imported row without a creation receipt', function (): void {
+    withStructuredContentScreenshotFixtureEnvironment(function (): void {
+        $owned = SeedStructuredContentScreenshotFixtureAction::run();
+        $attributes = $owned->getAttributes();
+        $owned->forceDelete();
+        DB::table($owned->getTable())->insert($attributes);
+        $foreign = StructuredContentItem::query()->whereKey($attributes['id'])->sole();
+        expect(fn (): StructuredContentItem => SeedStructuredContentScreenshotFixtureAction::run())->toThrow(RuntimeException::class)
+            ->and(fn () => SeedStructuredContentScreenshotFixtureAction::prepareEmpty())->toThrow(RuntimeException::class)
+            ->and($foreign->fresh()?->getRawOriginal())->toBe($foreign->getRawOriginal());
+    });
 });

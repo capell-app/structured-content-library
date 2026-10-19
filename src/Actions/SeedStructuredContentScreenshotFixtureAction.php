@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Actions;
 
+use Capell\ScreenshotFixtures\FixtureState;
 use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
@@ -18,6 +19,9 @@ final class SeedStructuredContentScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
+        require_once dirname(__DIR__, 4) . '/scripts/screenshots/FixtureState.php';
+        FixtureState::boot();
+
         (new StructuredContentItem)->getConnection()->transaction(static function (): void {
             self::assertFixtureOwnership(true);
             StructuredContentItem::query()->whereIn('slug', array_keys(self::fixtureRows()))->delete();
@@ -27,6 +31,9 @@ final class SeedStructuredContentScreenshotFixtureAction
     public static function run(): StructuredContentItem
     {
         self::assertDisposableScreenshotEnvironment();
+
+        require_once dirname(__DIR__, 4) . '/scripts/screenshots/FixtureState.php';
+        FixtureState::boot();
 
         return (new StructuredContentItem)->getConnection()->transaction(static function (): StructuredContentItem {
             self::assertFixtureOwnership(false);
@@ -104,6 +111,7 @@ final class SeedStructuredContentScreenshotFixtureAction
                 RuntimeException::class,
                 'Structured content screenshot slug belongs to another record.',
             );
+            FixtureState::assertOwned($item, __FILE__);
         }
     }
 
@@ -118,7 +126,9 @@ final class SeedStructuredContentScreenshotFixtureAction
                 && in_array(getenv('CAPELL_SCREENSHOT_FIXTURE'), ['1', 'true', 'record-state'], true)
                 && is_string($basePath)
                 && is_string($appPath)
-                && $basePath === $appPath,
+                && $basePath === $appPath
+                && ($basePath === realpath(dirname(__DIR__, 4) . '/vendor/orchestra/testbench-core/laravel')
+                    || str_starts_with($basePath, dirname(__DIR__, 4) . '/tmp/testbench-skeletons/')),
             RuntimeException::class,
             'Structured Content Library screenshot fixtures require the explicit disposable local screenshot environment.',
         );
