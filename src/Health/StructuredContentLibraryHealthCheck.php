@@ -57,6 +57,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
             remediation: $tableExists
                 ? null
                 : (string) __('capell-structured-content-library::health.storage_table_remediation'),
+            id: 'legacy.structured.content.library.storage.table',
         );
     }
 
@@ -73,6 +74,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
             remediation: $modelRegistered
                 ? null
                 : (string) __('capell-structured-content-library::health.model_registry_remediation'),
+            id: 'legacy.structured.content.library.model.registry',
         );
     }
 
@@ -89,6 +91,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
             remediation: $tableProtected
                 ? null
                 : (string) __('capell-structured-content-library::health.protected_table_remediation'),
+            id: 'legacy.structured.content.library.protected.table',
         );
     }
 
@@ -105,6 +108,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
             remediation: $resourceRegistered
                 ? null
                 : (string) __('capell-structured-content-library::health.admin_resource_remediation'),
+            id: 'legacy.structured.content.library.admin.resource',
         );
     }
 

@@ -8,7 +8,7 @@ use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Support\StructuredContentCache;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -35,27 +35,16 @@ final class BuildPublicStructuredContentItemsForTypesAction
         return StructuredContentCache::rememberPublicItemsByTypes(
             $types,
             $siteId,
-            fn (): array => $this->build($types, $siteId),
+            fn (Collection $items): array => $this->build($items),
         );
     }
 
     /**
-     * @param  list<StructuredContentType>  $types
+     * @param  Collection<int, StructuredContentItem>  $items
      * @return array<string, list<PublicStructuredContentItemData>>
      */
-    private function build(array $types, ?int $siteId): array
+    private function build(Collection $items): array
     {
-        /** @var Collection<int, StructuredContentItem> $items */
-        $items = StructuredContentItem::query()
-            ->whereIn('type', array_map(
-                static fn (StructuredContentType $type): string => $type->value,
-                $types,
-            ))
-            ->visibleToSite($siteId)
-            ->published()
-            ->ordered()
-            ->get();
-
         $groupedItems = [];
 
         foreach ($items as $item) {

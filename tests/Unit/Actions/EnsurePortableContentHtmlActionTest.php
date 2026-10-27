@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Capell\StructuredContentLibrary\Actions\EnsurePortableContentHtmlAction;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Dom\HTMLDocument;
 use Illuminate\Validation\ValidationException;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -73,3 +74,24 @@ it('still rejects blocked attributes such as onclick', function (): void {
         '<p onclick="alert(1)">Unsafe</p>',
     ))->toThrow(ValidationException::class);
 });
+
+it('rejects complete authoring attribute names', function (string $attribute): void {
+    expect(fn (): ?string => EnsurePortableContentHtmlAction::run('<p ' . $attribute . '>Text</p>'))
+        ->toThrow(ValidationException::class);
+})->with(['x-data="{}"', 'x-init="alert(1)"', 'wire:click="doSomething"', 'WIRE:click.prevent="save"', 'x-cloak']);
+
+it('rejects authoring shorthand and attributes after quoted tag delimiters', function (string $html): void {
+    expect(fn (): ?string => EnsurePortableContentHtmlAction::run($html))->toThrow(ValidationException::class);
+})->with(['<p @click="alert(1)">Text</p>', '<p :class="secret">Text</p>', '<p title=">" x-init="alert(1)">Text</p>']);
+
+it('sanitises parsed href attributes even without separating whitespace', function (string $html): void {
+    $safe = EnsurePortableContentHtmlAction::run($html);
+    $dom = HTMLDocument::createFromString($safe ?? '', LIBXML_NOERROR, 'UTF-8');
+    expect($dom->getElementsByTagName('a')->item(0)?->hasAttribute('href'))->toBeFalse()
+        ->and($dom->getElementsByTagName('a')->item(0)?->textContent)->toBe('test');
+})->with([
+    '<a title="safe"href="javascript:alert(1)">test</a>',
+    '<a title="safe"HREF="&#106;avascript:alert(1)">test</a>',
+    '<a title="safe"href=data:text/plain,hello>test</a>',
+    '<a title="safe"href="javascript:alert(1)" href="https://example.com">test</a>',
+]);

@@ -114,14 +114,16 @@ class StructuredContentLibraryTestCase extends TestCase
     protected function getPackageProviders(mixed $app): array
     {
         return [
+            // Core may resolve the view factory during registration, so bind icons first.
+            BladeIconsServiceProvider::class,
+            BladeHeroiconsServiceProvider::class,
             CapellServiceProvider::class,
             NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,
-            LivewireServiceProvider::class,
-            BladeIconsServiceProvider::class,
-            BladeHeroiconsServiceProvider::class,
+            // Register Filament's partial-render hook before Livewire boots its hook registry.
             SupportServiceProvider::class,
+            LivewireServiceProvider::class,
             SchemasServiceProvider::class,
             FormsServiceProvider::class,
             ActionsServiceProvider::class,

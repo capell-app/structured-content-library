@@ -27,3 +27,15 @@ it('de-duplicates a slug for a global (null site_id) item against an existing gl
 
     expect($resolvedSlug)->toBe('customer-story-2');
 });
+
+it('normalises a supplied content key rather than rejecting its input format', function (string $input, string $expected): void {
+    expect(ResolveUniqueStructuredContentSlugAction::run(
+        type: StructuredContentType::Testimonial,
+        siteId: null,
+        slugSource: $input,
+    ))->toBe($expected);
+})->with([
+    'spaces and capitals' => ['Customer Story', 'customer-story'],
+    'underscores' => ['Customer_Story', 'customer-story'],
+    'punctuation' => ['Customer Story!', 'customer-story'],
+]);

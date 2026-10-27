@@ -25,8 +25,8 @@ final class BuildPublicStructuredContentItemDataAction
             type: $item->type,
             title: $item->title,
             slug: $item->slug,
-            summary: $item->summary,
-            content: $item->content,
+            summary: EnsurePortableContentHtmlAction::run($item->summary, 'summary'),
+            content: EnsurePortableContentHtmlAction::run($item->content),
             payload: BuildPublicStructuredContentPayloadAction::run($item->payload, $item->type),
         );
     }

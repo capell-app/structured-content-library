@@ -78,7 +78,9 @@ it('declares provider classes and package metadata', function (): void {
             'structured-content-section-adapter',
             'structured-content-theme-adapter',
         )
-        ->and($manifest['description'])->toBe('Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.');
+        ->and($manifest['description'])->toBeString()->not->toBeEmpty();
+
+    assertCapellPackageDescription('structured-content-library', $manifest);
 });
 
 it('keeps adapter contribution markers aligned with public data actions', function (): void {

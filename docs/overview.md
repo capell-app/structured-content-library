@@ -10,27 +10,27 @@ Items are not translated records. A title, summary, body, and payload are stored
 
 ## Where to manage it
 
-Go to **Content -> Structured Content Items**. The list shows title, type, status, publication date, and sort order. Search by title, filter by type/status/trash state, and drag items into their intended order.
+Go to **Content -> Structured Content Items**. The list shows title, type, Site, status, publication date, and sort order. Search by title, filter by type/status/trash state, and review items in their intended order. Global administrators can drag items to reorder the mixed Site/global list; Site editors can set Sort order in an authorised item's Advanced section.
 
-The screen's Site field is hidden. A new item created there has global scope and can be returned for every Site. Site-specific items can be created through the package's typed integration/import action and are returned alongside global items only for that Site. The same slug can therefore exist in different Site scopes, but global and site-specific records are not automatically treated as overrides.
+Choose **Site** to control where an item can be reused. Site editors see only their assigned Sites, with the first available Site selected initially. Global administrators can choose any Site or explicitly select **All sites** to share the item across the installation. Existing items retain their saved scope when reopened. Site-specific items are returned alongside global items only for that Site. The same slug can therefore exist in different Site scopes, but global and site-specific records are not automatically treated as overrides.
 
-The admin list includes items assigned to the actor's Sites and global items; global actors can see every Site. Create/update Actions enforce the actor's Site scope. Keep global items under globally trusted roles.
+The admin list includes items assigned to the actor's Sites and global items; global actors can see every Site. Create/update Actions enforce the actor's Site scope. Only global administrators can edit, delete, restore or force-delete shared items. Bulk actions check each selected record's policy; Site editors retain read access to shared items.
 
 ## Create and publish an item
 
 1. Select **Create structured content**.
 2. Answer **What are you adding?** using one of the nine type cards. Each explains its purpose with an example.
-3. Add the required **Title** and choose **Status** (initially **Draft**).
-4. Complete the named type-specific group, then optional summary and content. Payload fields remain optional, including for title-only drafts.
-5. Expand **Advanced** for a slug override or sort order, or **Publishing** for a publication date, then save.
+3. Add the required **Title**, choose **Status** (initially **Draft**) and confirm **Site**. Global administrators must choose a Site or **All sites** before saving.
+4. Complete the named type-specific group, then optional summary and content using the formatting controls for headings, lists, links, emphasis, quotes and code. Payload fields remain optional, including for title-only drafts.
+5. Expand **Advanced** for a key override or sort order, or **Publishing** for a publication date, then save.
 
 Before the first save, choosing another type clears the unsaved type-specific fields and retains common content. After creation, the type is locked. Create a separate item for a different type: an existing record may already be selected by themes and imports under its original meaning. The update Action rejects type changes even from forged form state or stale model instances; there is no conversion operation.
 
 The package-owned `StructuredContentDefinitionData` projects each type's labels, description, example, named group and typed payload fields. `StructuredContentPayloadField` supplies requiredness, validation and public sanitisation. Create, update and import share the same payload validator, and public adapters use the same field membership. Non-empty incompatible fields are rejected on write, not silently carried into a new type. Historical incompatible fields are omitted from public output; editing and saving the current type removes hidden legacy fields.
 
-Leaving the slug blank derives it from the title. Slugs are unique within the selected type and Site scope; a collision is suffixed rather than overwriting the existing item. Soft-deleted records continue to reserve their slugs, which keeps restore safe but means a replacement may receive `-2` or a later suffix.
+Leaving the key blank derives it from the title. Keys are unique within the selected type and Site scope; a collision is suffixed rather than overwriting the existing item. Soft-deleted records continue to reserve their keys, which keeps restore safe but means a replacement may receive `-2` or a later suffix.
 
-Summary and content accept portable semantic HTML only: paragraphs, headings from `h2` to `h4`, lists, links, emphasis, blockquotes, code, and line breaks. Classes, styles, IDs, data/Alpine/Livewire/event attributes, embedded media, scripts, and other presentation markup are rejected on save or import. Put layout and visual styling in the consuming theme or widget.
+Summary and content provide rich-text controls without requiring HTML. They continue to store portable semantic HTML: paragraphs, headings from `h2` to `h4`, lists, links, emphasis, blockquotes, code, and line breaks. Existing portable HTML retains its semantic formatting when reopened and saved. The toolbar excludes presentation controls and media attachments. Classes, styles, IDs, data/Alpine/Livewire/event attributes, embedded media, scripts, and other presentation markup are rejected by the write Actions or safely removed by the editor before saving. Unsafe link schemes are removed. Imports use the same server validation. Put layout and visual styling in the consuming theme or widget.
 
 Use **Preview saved content** on the edit page to inspect the saved values through the same hydrated public projection used by themes. It includes saved drafts, escapes all displayed text and does not publish anything or render your theme's layout. Unsaved edits are excluded.
 

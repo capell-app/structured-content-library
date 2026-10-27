@@ -33,13 +33,13 @@ final class StructuredContentItemPolicy
     public function update(User $user, StructuredContentItem $record): bool
     {
         return $this->hasPermission($user, 'update')
-            && $this->canUseRecordSite($user, $record);
+            && $this->canMutateRecordSite($user, $record);
     }
 
     public function delete(User $user, StructuredContentItem $record): bool
     {
         return $this->hasPermission($user, 'delete')
-            && $this->canUseRecordSite($user, $record);
+            && $this->canMutateRecordSite($user, $record);
     }
 
     public function deleteAny(User $user): bool
@@ -50,7 +50,7 @@ final class StructuredContentItemPolicy
     public function restore(User $user, StructuredContentItem $record): bool
     {
         return $this->hasPermission($user, 'restore')
-            && $this->canUseRecordSite($user, $record);
+            && $this->canMutateRecordSite($user, $record);
     }
 
     public function restoreAny(User $user): bool
@@ -61,7 +61,7 @@ final class StructuredContentItemPolicy
     public function forceDelete(User $user, StructuredContentItem $record): bool
     {
         return $this->hasPermission($user, 'force_delete')
-            && $this->canUseRecordSite($user, $record);
+            && $this->canMutateRecordSite($user, $record);
     }
 
     public function forceDeleteAny(User $user): bool
@@ -72,12 +72,13 @@ final class StructuredContentItemPolicy
     public function replicate(User $user, StructuredContentItem $record): bool
     {
         return $this->hasPermission($user, 'replicate')
-            && $this->canUseRecordSite($user, $record);
+            && $this->canMutateRecordSite($user, $record);
     }
 
     public function reorder(User $user): bool
     {
-        return $this->hasPermission($user, 'reorder');
+        // The list includes shared records; editors set their own items' sort order in the form.
+        return SiteScope::isGlobalActor($user) && $this->hasPermission($user, 'reorder');
     }
 
     /**
@@ -85,13 +86,7 @@ final class StructuredContentItemPolicy
      */
     private function hasAnyPermission(User $user, array $abilities): bool
     {
-        foreach ($abilities as $ability) {
-            if ($this->hasPermission($user, $ability)) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($abilities, fn (string $ability): bool => $this->hasPermission($user, $ability));
     }
 
     private function hasPermission(User $user, string $ability): bool
@@ -116,5 +111,11 @@ final class StructuredContentItemPolicy
         }
 
         return $user->getAssignedSiteIds()->contains((int) $siteId);
+    }
+
+    private function canMutateRecordSite(User $user, StructuredContentItem $record): bool
+    {
+        return SiteScope::isGlobalActor($user)
+            || ($record->site_id !== null && $this->canUseRecordSite($user, $record));
     }
 }

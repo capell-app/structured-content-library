@@ -15,6 +15,8 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Policies\StructuredContentItemPolicy;
 use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Capell\StructuredContentLibrary\Support\StructuredContentModelRegistrar;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\Gate;
 use Override;
 use Spatie\LaravelPackageTools\Package;
@@ -40,6 +42,16 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
                 '2026_06_04_000001_add_unique_scope_slug_index_to_structured_content_items_table',
                 '2026_07_10_000001_add_normalized_scope_key_to_structured_content_items',
             ]);
+    }
+
+    #[Override]
+    public function packageBooted(): void
+    {
+        FilamentAsset::register([
+            Js::make('portable-list-semantics', __DIR__ . '/../../resources/js/portable-list-semantics.js')
+                ->module()
+                ->loadedOnRequest(),
+        ], package: self::$name);
     }
 
     #[Override]

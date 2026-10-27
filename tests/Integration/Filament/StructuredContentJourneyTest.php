@@ -83,7 +83,7 @@ it('creates and reopens type-specific content with advanced and publishing value
     Livewire::test(CreateStructuredContentItem::class)
         ->set('data.type', 'faq')
         ->fillForm([
-            'title' => 'Delivery', 'status' => 'published', 'slug' => 'delivery-help', 'sort_order' => 12,
+            'site_id' => 'all', 'title' => 'Delivery', 'status' => 'published', 'slug' => 'delivery-help', 'sort_order' => 12,
             'published_at' => '2026-08-01 10:00:00',
             'payload' => ['question' => 'When will it arrive?', 'answer' => 'Within three days.'],
         ])

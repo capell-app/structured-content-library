@@ -7,6 +7,11 @@ namespace Capell\StructuredContentLibrary\Filament\Resources\StructuredContentIt
 use BackedEnum;
 use Capell\Admin\Support\SiteScope;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Site;
+use Capell\Core\Support\Permissions\SiteAccess;
+use Capell\StructuredContentLibrary\Actions\DescribeStructuredContentAvailabilityAction;
+use Capell\StructuredContentLibrary\Actions\EnsurePortableContentHtmlAction;
+use Capell\StructuredContentLibrary\Actions\EnsurePortableEditorDocumentAction;
 use Capell\StructuredContentLibrary\Data\StructuredContentDefinitionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
@@ -16,6 +21,9 @@ use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pa
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\ListStructuredContentItems;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
+use Capell\StructuredContentLibrary\Support\RichEditor\PortableContentPlugin;
+use Capell\StructuredContentLibrary\Support\RichEditor\PortableRichEditor;
+use Closure;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -25,11 +33,12 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
@@ -44,6 +53,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\ValidationException;
 use Override;
 
 class StructuredContentItemResource extends Resource
@@ -58,28 +68,28 @@ class StructuredContentItemResource extends Resource
     public static function form(Schema $configurator): Schema
     {
         return $configurator->components([
-            Section::make(fn (?StructuredContentItem $record): string => $record === null
-                ? __('capell-structured-content-library::admin.choose_type')
-                : $record->type->getLabel())
+            Section::make(fn (?StructuredContentItem $record): string => $record instanceof StructuredContentItem
+                ? $record->type->getLabel()
+                : __('capell-structured-content-library::admin.choose_type'))
                 ->schema([
                     Radio::make('type')
                         ->label(__('capell-structured-content-library::admin.type'))
                         ->hiddenLabel()
                         ->view('capell-structured-content-library::forms.type-cards')
-                        ->options(fn (?StructuredContentItem $record): array => $record === null
-                            ? self::typeOptions()
-                            : [$record->type->value => $record->type->getLabel()])
+                        ->options(fn (?StructuredContentItem $record): array => $record instanceof StructuredContentItem
+                            ? [$record->type->value => $record->type->getLabel()]
+                            : self::typeOptions())
                         ->descriptions(self::typeDescriptions())
                         ->columns(['default' => 1, 'md' => 2, 'xl' => 3])
                         ->required()
                         ->live()
-                        ->disabled(fn (?StructuredContentItem $record): bool => $record !== null)
+                        ->disabled(fn (?StructuredContentItem $record): bool => $record instanceof StructuredContentItem)
                         ->dehydrated()
-                        ->helperText(fn (?StructuredContentItem $record): string => $record === null
-                            ? __('capell-structured-content-library::admin.type_choice_help')
-                            : __('capell-structured-content-library::validation.type_locked'))
+                        ->helperText(fn (?StructuredContentItem $record): string => $record instanceof StructuredContentItem
+                            ? __('capell-structured-content-library::validation.type_locked')
+                            : __('capell-structured-content-library::admin.type_choice_help'))
                         ->afterStateUpdated(function (Set $set, ?StructuredContentItem $record): void {
-                            if ($record === null) {
+                            if (! $record instanceof StructuredContentItem) {
                                 $set('payload', []);
                             }
                         }),
@@ -88,6 +98,10 @@ class StructuredContentItemResource extends Resource
                 ->columnSpanFull(),
             Section::make(__('capell-structured-content-library::admin.section_common'))
                 ->schema([
+                    TextEntry::make('saved_availability')
+                        ->label(__('capell-structured-content-library::admin.saved_availability'))
+                        ->state(fn (?StructuredContentItem $record): string => $record === null ? '' : DescribeStructuredContentAvailabilityAction::run($record))
+                        ->visible(fn (?StructuredContentItem $record): bool => $record !== null),
                     TextInput::make('title')
                         ->label(__('capell-structured-content-library::admin.title'))
                         ->required()
@@ -97,28 +111,37 @@ class StructuredContentItemResource extends Resource
                         ->options(self::statusOptions())
                         ->required()
                         ->default(StructuredContentStatus::Draft->value),
+                    Select::make('site_id')
+                        ->label(__('capell-structured-content-library::admin.site'))
+                        ->helperText(__('capell-structured-content-library::admin.site_help'))
+                        ->options(self::siteOptions(...))
+                        ->default(fn (): ?int => SiteAccess::current()->isGlobal()
+                            ? null
+                            : SiteAccess::current()->query(Site::class)->orderBy('name')->first()?->id)
+                        ->afterStateHydrated(function (Select $component, ?StructuredContentItem $record): void {
+                            if ($record instanceof StructuredContentItem && $record->site_id === null) {
+                                $component->state('all');
+                            }
+                        })
+                        ->dehydrateStateUsing(fn (int|string|null $state): ?int => $state === 'all' || $state === null ? null : (int) $state)
+                        ->required(),
                 ])
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->columns(2)
                 ->columnSpanFull(),
-            Section::make(fn (Get $get): string => ($type = self::payloadTypeFromState($get('type'))) === null
-                ? ''
-                : StructuredContentDefinitionData::forType($type)->groupLabel())
+            Section::make(fn (Get $get): string => ($type = self::payloadTypeFromState($get('type'))) instanceof StructuredContentType
+                ? StructuredContentDefinitionData::forType($type)->groupLabel()
+                : '')
                 ->schema(array_map(self::payloadField(...), StructuredContentPayloadField::cases()))
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->columns(2)
                 ->columnSpanFull(),
             Section::make(__('capell-structured-content-library::admin.section_content'))
                 ->schema([
-                    Textarea::make('summary')
-                        ->label(__('capell-structured-content-library::admin.summary'))
-                        ->rows(3),
-                    Textarea::make('content')
-                        ->label(__('capell-structured-content-library::admin.content'))
-                        ->rows(8)
-                        ->helperText(__('capell-structured-content-library::admin.content_help')),
+                    self::portableEditor('summary'),
+                    self::portableEditor('content'),
                 ])
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->columnSpanFull(),
             Section::make(__('capell-structured-content-library::admin.section_advanced'))
                 ->schema([
@@ -132,7 +155,7 @@ class StructuredContentItemResource extends Resource
                         ->minValue(0)
                         ->default(0),
                 ])
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->collapsed()
                 ->columns(2)
                 ->columnSpanFull(),
@@ -141,10 +164,9 @@ class StructuredContentItemResource extends Resource
                     DateTimePicker::make('published_at')
                         ->label(__('capell-structured-content-library::admin.published_at')),
                 ])
-                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) !== null)
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->collapsed()
                 ->columnSpanFull(),
-            Hidden::make('site_id'),
         ]);
     }
 
@@ -164,11 +186,17 @@ class StructuredContentItemResource extends Resource
                     ->formatStateUsing(fn (StructuredContentType|string|null $state): string => self::formatType($state))
                     ->badge()
                     ->sortable(),
+                TextColumn::make('site.name')
+                    ->label(__('capell-structured-content-library::admin.site'))
+                    ->placeholder(__('capell-structured-content-library::admin.all_sites')),
                 TextColumn::make('status')
                     ->label(__('capell-structured-content-library::admin.status'))
                     ->formatStateUsing(fn (StructuredContentStatus|string|null $state): string => self::formatStatus($state))
                     ->badge()
                     ->sortable(),
+                TextColumn::make('availability')
+                    ->label(__('capell-structured-content-library::admin.availability'))
+                    ->state(fn (StructuredContentItem $record): string => DescribeStructuredContentAvailabilityAction::run($record)),
                 TextColumn::make('published_at')
                     ->label(__('capell-structured-content-library::admin.published_at'))
                     ->dateTime()
@@ -189,15 +217,23 @@ class StructuredContentItemResource extends Resource
             ->recordActions([
                 EditAction::make(),
                 ActionGroup::make([
-                    DeleteAction::make(),
+                    DeleteAction::make()
+                        ->modalHeading(__('capell-structured-content-library::structured_content_item.delete_modal.heading'))
+                        ->modalDescription(__('capell-structured-content-library::structured_content_item.delete_modal.description')),
                     RestoreAction::make(),
                 ])
                     ->color('gray'),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
-                RestoreBulkAction::make(),
-                ForceDeleteBulkAction::make(),
+                DeleteBulkAction::make()
+                    ->authorizeIndividualRecords('delete')
+                    ->modalHeading(__('capell-structured-content-library::structured_content_item.delete_bulk_modal.heading'))
+                    ->modalDescription(__('capell-structured-content-library::structured_content_item.delete_bulk_modal.description')),
+                RestoreBulkAction::make()->authorizeIndividualRecords('restore'),
+                ForceDeleteBulkAction::make()
+                    ->authorizeIndividualRecords('forceDelete')
+                    ->modalHeading(__('capell-structured-content-library::structured_content_item.force_delete_bulk_modal.heading'))
+                    ->modalDescription(__('capell-structured-content-library::structured_content_item.force_delete_bulk_modal.description')),
             ])
             ->reorderable('sort_order')
             ->defaultSort('sort_order');
@@ -265,6 +301,56 @@ class StructuredContentItemResource extends Resource
     public static function payloadFieldsForType(StructuredContentType $type): array
     {
         return StructuredContentDefinitionData::forType($type)->fieldNames();
+    }
+
+    private static function portableEditor(string $name): RichEditor
+    {
+        return PortableRichEditor::make($name)
+            ->plugins([new PortableContentPlugin])
+            ->label(__('capell-structured-content-library::admin.' . $name))
+            ->helperText(__('capell-structured-content-library::admin.content_help'))
+            ->toolbarButtons([
+                ['paragraph', 'h2', 'h3', 'h4'],
+                ['bold', 'italic', 'link'],
+                ['bulletList', 'orderedList', 'blockquote', 'code', 'codeBlock'],
+                ['undo', 'redo'],
+            ])
+            ->floatingToolbars([])
+            ->fileAttachments(false)
+            ->dehydrateStateUsing(fn (?string $state): ?string => in_array($state, ['', '<p></p>'], true) ? null : $state)
+            ->rules([
+                fn (RichEditor $component): Closure => function (string $attribute, mixed $value, Closure $fail) use ($component): void {
+                    try {
+                        EnsurePortableEditorDocumentAction::run($component->getRawState());
+                        $html = $component->getState();
+
+                        if (! is_string($html)) {
+                            $fail(__('capell-structured-content-library::validation.portable_content'));
+
+                            return;
+                        }
+
+                        EnsurePortableContentHtmlAction::run($html);
+                    } catch (ValidationException) {
+                        $fail(__('capell-structured-content-library::validation.portable_content'));
+                    }
+                },
+            ]);
+    }
+
+    /** @return array<int|string, string> */
+    private static function siteOptions(): array
+    {
+        $access = SiteAccess::current();
+        $sites = [];
+
+        foreach ($access->query(Site::class)->orderBy('name')->get() as $site) {
+            $sites[$site->id] = $site->name;
+        }
+
+        return $access->isGlobal()
+            ? ['all' => __('capell-structured-content-library::admin.all_sites')] + $sites
+            : $sites;
     }
 
     private static function payloadField(StructuredContentPayloadField $definition): Field

@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
-    "description": "Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.",
+    "description": "Maintain portable, reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations and logos.",
     "product": {
         "group": "Capell Foundation",
         "tier": "free",
@@ -63,6 +63,12 @@
             "outputDataClass": "Capell\\StructuredContentLibrary\\Data\\PublicStructuredContentItemData",
             "consumerPackages": ["capell-app/theme-foundation"],
             "publicOutputSafety": "Returns hydrated public DTOs only; no public route, Blade query, editor marker, model id, field path, signed URL, or package identifier is emitted."
+        },
+        {
+            "type": "asset",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentAssetsContribution",
+            "surface": "admin",
+            "assets": ["portable-list-semantics"]
         }
     ],
     "database": {

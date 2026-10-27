@@ -14,12 +14,16 @@ use Capell\StructuredContentLibrary\Policies\StructuredContentItemPolicy;
 use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServiceProvider;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Livewire;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 
@@ -221,3 +225,28 @@ function structuredContentPolicyPermission(string $ability): string
 
     return $ability . ':StructuredContentItem';
 }
+
+it('displays the translated structured content key helper', function (): void {
+    $translation = 'capell-structured-content-library::admin.slug_help';
+    expect(resolve(Translator::class)->has($translation))->toBeTrue();
+
+    Filament::setCurrentPanel(Filament::getPanel('scl-test'));
+    Filament::bootCurrentPanel();
+
+    Livewire::test(CreateStructuredContentItem::class)
+        ->assertFormFieldHidden('slug')
+        ->set('data.type', StructuredContentType::Faq->value)
+        ->assertFormFieldVisible('slug')
+        ->assertFormFieldExists('slug', fn (TextInput $field): bool => $field->getLabel() === 'Key')
+        ->assertSee(__($translation));
+});
+
+it('labels structured content email inputs as email addresses', function (StructuredContentType $type): void {
+    Filament::setCurrentPanel(Filament::getPanel('scl-test'));
+    Filament::bootCurrentPanel();
+
+    Livewire::test(CreateStructuredContentItem::class)
+        ->set('data.type', $type->value)
+        ->assertFormFieldVisible('payload.email')
+        ->assertFormFieldExists('payload.email', fn (TextInput $field): bool => $field->getLabel() === 'Email address');
+})->with([StructuredContentType::TeamMember, StructuredContentType::Location]);

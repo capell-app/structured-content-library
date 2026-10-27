@@ -3,11 +3,18 @@
 declare(strict_types=1);
 
 use Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction;
+use Capell\StructuredContentLibrary\Actions\DescribeStructuredContentAvailabilityAction;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
+use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
+use Carbon\CarbonImmutable;
+use Dom\HTMLDocument;
+use Filament\Support\Facades\FilamentTimezone;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
 
@@ -164,3 +171,73 @@ it('keeps public http and relative payload urls', function (): void {
     ])
         ->and($items[0]->payload)->not->toHaveKey('email');
 });
+
+it('removes adjacent unsafe links from both public rich text fields', function (string $field): void {
+    StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
+        $field => '<a title="safe"href="javascript:alert(1)">test</a>',
+    ]);
+    $public = BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service)[0];
+    $dom = HTMLDocument::createFromString($public->{$field} ?? '', LIBXML_NOERROR, 'UTF-8');
+    expect($dom->getElementsByTagName('a')->item(0)?->hasAttribute('href'))->toBeFalse()
+        ->and($dom->getElementsByTagName('a')->item(0)?->textContent)->toBe('test');
+})->with(['content', 'summary']);
+
+it('sanitises legacy cached rich text before returning public items', function (string $field): void {
+    $store = Mockery::mock(Repository::class);
+    $store->shouldReceive('get')->once()->andReturn(['service' => [[
+        'type' => 'service', 'title' => 'Cached service',
+        $field => '<a title="safe"href="javascript:alert(1)">test</a>',
+    ]]]);
+    Cache::shouldReceive('get')->andReturn(1);
+    Cache::shouldReceive('supportsTags')->andReturnFalse();
+    Cache::shouldReceive('store')->andReturn($store);
+
+    $items = StructuredContentCache::rememberPublicItemsByTypes([StructuredContentType::Service], null, function (): never {
+        throw new RuntimeException('A cache hit must not query the database.');
+    });
+    $dom = HTMLDocument::createFromString($items['service'][0]->{$field} ?? '', LIBXML_NOERROR, 'UTF-8');
+    expect($dom->querySelector('a')?->hasAttribute('href'))->toBeFalse()
+        ->and($dom->querySelector('a')?->textContent)->toBe('test');
+})->with(['content', 'summary']);
+
+it('changes availability at the publication instant even when the adapter was cached before it', function (): void {
+    $this->travelTo(CarbonImmutable::parse('2026-07-01 10:00:00', 'UTC'));
+    $publication = now()->addSeconds(30);
+    $item = StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
+        'published_at' => $publication,
+    ]);
+
+    foreach ([StructuredContentStatus::Draft, StructuredContentStatus::Archived] as $status) {
+        StructuredContentItem::factory()->type(StructuredContentType::Service)->create([
+            'status' => $status,
+            'published_at' => now()->subDay(),
+        ]);
+    }
+
+    FilamentTimezone::set('Europe/London');
+    try {
+        expect(DescribeStructuredContentAvailabilityAction::run($item))
+            ->toBe(__('capell-structured-content-library::admin.scheduled', [
+                'time' => '1 Jul 2026 11:00:30 BST',
+            ]))
+            ->and(BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service))->toBe([]);
+
+        $this->travelTo($publication->copy()->subSecond());
+        expect(BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service))->toBe([]);
+
+        $this->travelTo($publication);
+        $public = BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service);
+        expect($public)->toHaveCount(1)
+            ->and($public[0]->title)->toBe($item->title)
+            ->and(DescribeStructuredContentAvailabilityAction::run($item))
+            ->toBe(__('capell-structured-content-library::admin.available'));
+    } finally {
+        FilamentTimezone::set(null);
+        $this->travelBack();
+    }
+});
+
+it('keeps draft and archived availability independent of a past date', function (StructuredContentStatus $status): void {
+    $item = StructuredContentItem::factory()->create(['status' => $status, 'published_at' => now()->subDay()]);
+    expect(DescribeStructuredContentAvailabilityAction::run($item))->toBe($status->getLabel());
+})->with([StructuredContentStatus::Draft, StructuredContentStatus::Archived]);

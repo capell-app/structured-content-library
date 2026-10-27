@@ -90,6 +90,11 @@ it('batches section public-content reads and reuses cached output', function ():
     StructuredContentCache::flush();
 
     StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
+        'title' => 'Scheduled service',
+        'published_at' => now()->addDay(),
+        'sort_order' => 0,
+    ]);
+    StructuredContentItem::factory()->published()->type(StructuredContentType::Service)->create([
         'title' => 'Implementation',
         'sort_order' => 1,
     ]);
@@ -123,6 +128,10 @@ it('batches section public-content reads and reuses cached output', function ():
 
     expect($firstResult)->toHaveCount(3)
         ->and($secondResult)->toHaveCount(3)
+        ->and($firstResult[0]->items)->toHaveCount(1)
+        ->and($firstResult[0]->items[0]->title)->toBe('Implementation')
+        ->and($secondResult[0]->items)->toHaveCount(1)
+        ->and($secondResult[0]->items[0]->title)->toBe('Implementation')
         ->and($firstStructuredContentQueries)->toBeLessThanOrEqual(1)
         ->and($secondStructuredContentQueries)->toBe(0);
 });

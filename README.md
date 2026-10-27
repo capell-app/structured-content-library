@@ -77,9 +77,12 @@ Screenshot contract: `docs/screenshots.json`.
 - `BuildPublicStructuredContentPayloadAction`
 - `BuildStructuredContentSectionsAction`
 - `CreateStructuredContentItemAction`
+- `DescribeStructuredContentAvailabilityAction`
 - `EnsurePortableContentHtmlAction`
+- `EnsurePortableEditorDocumentAction`
 - `ImportStructuredContentItemsAction`
 - `ListStructuredContentItemsAction`
+- `ResolveStructuredContentCacheExpiryAction`
 - `ResolveUniqueStructuredContentSlugAction`
 - `SeedStructuredContentScreenshotFixtureAction`
 - `UpdateStructuredContentItemAction`
@@ -110,6 +113,7 @@ Screenshot contract: `docs/screenshots.json`.
 - `admin-resource: Capell\StructuredContentLibrary\Manifest\StructuredContentItemResourceContribution`
 - `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentSectionAdapterContribution`
 - `agent-capability: Capell\StructuredContentLibrary\Manifest\StructuredContentThemeAdapterContribution`
+- `asset: Capell\StructuredContentLibrary\Manifest\StructuredContentAssetsContribution`
 - `model: Capell\StructuredContentLibrary\Manifest\StructuredContentModelsContribution`
 
 ### Health checks
@@ -166,6 +170,12 @@ Screenshot contract: `docs/screenshots.json`.
 
 1. Install the package: `composer require capell-app/structured-content-library`.
 2. Open the package admin surface at `/admin/structured-content-library/structured-content-items` and confirm Structured Content Library is available.
+
+## Upgrading
+
+No manual steps between minor versions.
+
+Read [CHANGELOG.md](CHANGELOG.md) before upgrading.
 
 ## Next Steps
 

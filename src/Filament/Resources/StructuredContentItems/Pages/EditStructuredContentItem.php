@@ -25,6 +25,24 @@ class EditStructuredContentItem extends EditRecord
 
     /**
      * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    #[Override]
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        foreach (['content', 'summary'] as $field) {
+            $text = $data[$field] ?? null;
+            // The database stores HTML/text; a JSON-looking value is never an editor document.
+            if (is_string($text) && json_validate($text)) {
+                $data[$field] = '<p>' . $text . '</p>';
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
      */
     #[Override]
     protected function handleRecordUpdate(Model $record, array $data): Model
@@ -54,8 +72,12 @@ class EditStructuredContentItem extends EditRecord
                     ]);
                 }),
             RestoreAction::make(),
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
+            DeleteAction::make()
+                ->modalHeading(__('capell-structured-content-library::structured_content_item.delete_modal.heading'))
+                ->modalDescription(__('capell-structured-content-library::structured_content_item.delete_modal.description')),
+            ForceDeleteAction::make()
+                ->modalHeading(__('capell-structured-content-library::structured_content_item.force_delete_modal.heading'))
+                ->modalDescription(__('capell-structured-content-library::structured_content_item.force_delete_modal.description')),
         ];
     }
 }

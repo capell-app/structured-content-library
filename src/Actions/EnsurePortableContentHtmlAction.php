@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Actions;
 
 use Capell\Core\Support\Security\PublicUrlSanitizer;
+use Dom\HTMLDocument;
 use Illuminate\Validation\ValidationException;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
@@ -32,6 +33,12 @@ class EnsurePortableContentHtmlAction
         'ul',
     ];
 
+    public static function isPortableAttributeName(string $name): bool
+    {
+        return preg_match('/^[^\s"\'<>\/=\x00-\x1f]+$/u', $name) === 1
+            && preg_match('/^(?:class|style|id|data-.*|wire:.*|x-.*|on[a-z]+|[@:].*)$/i', $name) !== 1;
+    }
+
     public function handle(?string $content, string $field = 'content'): ?string
     {
         if ($content === null) {
@@ -52,45 +59,33 @@ class EnsurePortableContentHtmlAction
             $this->throwPortableContentException($field);
         }
 
-        if (preg_match('/<[^>]+\\s(?:class|style|id|data-[a-z0-9_-]+|wire:|x-|on[a-z]+)\\s*=/i', $trimmedContent) === 1) {
-            $this->throwPortableContentException($field);
-        }
-
-        return $this->stripUnsafeHrefAttributes($trimmedContent, $field);
-    }
-
-    /**
-     * The tag allow-list above lets `<a>` through, but neither strip_tags()
-     * nor the attribute-blocking regex inspects the *value* of a surviving
-     * `href`. Without this pass, `<a href="javascript:...">` is portable
-     * content as far as this action is concerned, and is later rendered raw
-     * via PublicStructuredContentItemData->content. Reuse the platform's
-     * scheme allow-list and drop the whole attribute (not just neutralise
-     * it) when the value fails it.
-     */
-    private function stripUnsafeHrefAttributes(string $content, string $field): string
-    {
-        $sanitisedContent = preg_replace_callback(
-            '/\\s+href\\s*=\\s*("[^"]*"|\'[^\']*\'|[^\\s>]+)/i',
-            static function (array $matches): string {
-                $rawValue = $matches[1];
-
-                if ($rawValue[0] === '"' || $rawValue[0] === '\'') {
-                    $rawValue = substr($rawValue, 1, -1);
+        // Parse attributes: a tag regex can stop at a quoted ">" and miss later attributes.
+        $dom = HTMLDocument::createFromString($trimmedContent, LIBXML_NOERROR, 'UTF-8');
+        $hasUnsafeHref = false;
+        foreach ($dom->getElementsByTagName('*') as $element) {
+            foreach ($element->attributes as $attribute) {
+                if (! self::isPortableAttributeName($attribute->name)) {
+                    $this->throwPortableContentException($field);
                 }
+            }
 
-                $decodedValue = html_entity_decode($rawValue, ENT_QUOTES | ENT_HTML5);
-
-                return PublicUrlSanitizer::sanitize($decodedValue) === null ? '' : $matches[0];
-            },
-            $content,
-        );
-
-        if ($sanitisedContent === null) {
-            $this->throwPortableContentException($field);
+            if ($element->hasAttribute('href') && PublicUrlSanitizer::sanitize($element->getAttribute('href')) === null) {
+                $element->removeAttribute('href');
+                $hasUnsafeHref = true;
+            }
         }
 
-        return $sanitisedContent;
+        if (! $hasUnsafeHref) {
+            return $trimmedContent;
+        }
+
+        // Serialise the same parsed attributes we inspected; regexes miss adjacent attributes.
+        $html = '';
+        foreach ($dom->body->childNodes ?? [] as $node) {
+            $html .= $dom->saveHtml($node);
+        }
+
+        return $html;
     }
 
     private function throwPortableContentException(string $field): never

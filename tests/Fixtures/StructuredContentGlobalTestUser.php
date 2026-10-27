@@ -4,15 +4,21 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Tests\Fixtures;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 
 final class StructuredContentGlobalTestUser extends User
 {
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
     /** @param list<int> $assignedSiteIds */
     public function __construct(
         private readonly bool $global = true,
         private readonly array $assignedSiteIds = [],
+        private readonly bool $permissionsAllowed = true,
     ) {
         parent::__construct();
     }
@@ -26,7 +32,7 @@ final class StructuredContentGlobalTestUser extends User
     {
         unset($permission, $guardName);
 
-        return true;
+        return $this->permissionsAllowed;
     }
 
     /** @return Collection<int, int> */
