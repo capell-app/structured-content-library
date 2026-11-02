@@ -12,6 +12,7 @@ use Capell\Core\Support\Permissions\SiteAccess;
 use Capell\StructuredContentLibrary\Actions\DescribeStructuredContentAvailabilityAction;
 use Capell\StructuredContentLibrary\Actions\EnsurePortableContentHtmlAction;
 use Capell\StructuredContentLibrary\Actions\EnsurePortableEditorDocumentAction;
+use Capell\StructuredContentLibrary\Actions\InvalidateStructuredContentOrderAction;
 use Capell\StructuredContentLibrary\Data\StructuredContentDefinitionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
@@ -236,6 +237,9 @@ class StructuredContentItemResource extends Resource
                     ->modalDescription(__('capell-structured-content-library::structured_content_item.force_delete_bulk_modal.description')),
             ])
             ->reorderable('sort_order')
+            ->afterReordering(static function (array $order): void {
+                InvalidateStructuredContentOrderAction::run($order);
+            })
             ->defaultSort('sort_order');
     }
 

@@ -81,7 +81,9 @@ Screenshot contract: `docs/screenshots.json`.
 - `EnsurePortableContentHtmlAction`
 - `EnsurePortableEditorDocumentAction`
 - `ImportStructuredContentItemsAction`
+- `InvalidateStructuredContentOrderAction`
 - `ListStructuredContentItemsAction`
+- `MergeStructuredContentReorderAction`
 - `ResolveStructuredContentCacheExpiryAction`
 - `ResolveUniqueStructuredContentSlugAction`
 - `SeedStructuredContentScreenshotFixtureAction`

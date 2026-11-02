@@ -23,6 +23,7 @@ use Filament\Forms\Components\Field;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -630,4 +631,133 @@ it('shows saved availability on the real editor and previews saved content rathe
     expect($dom->querySelector('article h2')?->textContent)->toBe('Saved service')
         ->and($dom->querySelector('article a'))->toBeNull();
     $component->assertMountedActionModalSee(__('capell-structured-content-library::admin.preview_help'));
+});
+
+it('keeps items hidden by a filter in place when a filtered list is reordered', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $make = fn (string $title, int $order, string $status): StructuredContentItem => StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service, 'site_id' => null, 'title' => $title, 'sort_order' => $order, 'status' => $status, 'published_at' => null,
+    ]);
+    $first = $make('First', 1, 'published');
+    $second = $make('Second', 2, 'published');
+    $draft = $make('Draft', 3, 'draft');
+    $fourth = $make('Fourth', 4, 'published');
+
+    Livewire::test(ListStructuredContentItems::class)
+        ->filterTable('status', 'published')
+        ->call('reorderTable', [$fourth->getKey(), $first->getKey(), $second->getKey()]);
+
+    expect(StructuredContentItem::query()->ordered()->pluck('title')->all())->toBe(['Fourth', 'First', 'Draft', 'Second'])
+        ->and(StructuredContentItem::query()->pluck('sort_order')->unique()->count())->toBe(4);
+
+    $draft->update(['status' => 'published']);
+
+    expect(array_map(static fn (mixed $item): string => $item->title, BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service)))
+        ->toBe(['Fourth', 'First', 'Draft', 'Second']);
+});
+
+it('shows a drag reorder on the public list without waiting for the cache to expire', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $first = StructuredContentItem::factory()->create(['type' => StructuredContentType::Service, 'site_id' => null, 'title' => 'First', 'sort_order' => 1, 'status' => 'published', 'published_at' => null]);
+    $second = StructuredContentItem::factory()->create(['type' => StructuredContentType::Service, 'site_id' => null, 'title' => 'Second', 'sort_order' => 2, 'status' => 'published', 'published_at' => null]);
+    $titles = static fn (): array => array_map(static fn (mixed $item): string => $item->title, BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service));
+
+    expect($titles())->toBe(['First', 'Second']);
+
+    Livewire::test(ListStructuredContentItems::class)->call('reorderTable', [$second->getKey(), $first->getKey()]);
+
+    expect($titles())->toBe(['Second', 'First']);
+});
+
+it('refreshes site-scoped public lists after a reorder without changing another site', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $siteA = $this->createStructuredContentSite('Reorder site A');
+    $siteB = $this->createStructuredContentSite('Reorder site B');
+    $make = static fn (int $site, string $title, int $order): StructuredContentItem => StructuredContentItem::factory()->create([
+        'type' => StructuredContentType::Service, 'site_id' => $site, 'title' => $title,
+        'sort_order' => $order, 'status' => 'published', 'published_at' => null,
+    ]);
+    $first = $make($siteA, 'A first', 1);
+    $second = $make($siteA, 'A second', 2);
+    $other = $make($siteB, 'B only', 3);
+    $titles = static fn (int $site): array => array_map(
+        static fn (mixed $item): string => $item->title,
+        BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service, $site),
+    );
+    expect($titles($siteA))->toBe(['A first', 'A second'])->and($titles($siteB))->toBe(['B only']);
+
+    Livewire::test(ListStructuredContentItems::class)->call('reorderTable', [$second->getKey(), $first->getKey()]);
+
+    expect($second->refresh()->sort_order)->toBe(1)->and($first->refresh()->sort_order)->toBe(2)
+        ->and($other->refresh()->sort_order)->toBe(3)
+        ->and($titles($siteA))->toBe(['A second', 'A first'])->and($titles($siteB))->toBe(['B only']);
+});
+
+it('does not invalidate or change public order for an invalid or unauthorised reorder', function (bool $authorised): void {
+    $site = $this->createStructuredContentSite('Rejected reorder');
+    $first = StructuredContentItem::factory()->create(['type' => StructuredContentType::Service, 'site_id' => $site, 'title' => 'First', 'sort_order' => 1, 'status' => 'published', 'published_at' => null]);
+    $second = StructuredContentItem::factory()->create(['type' => StructuredContentType::Service, 'site_id' => $site, 'title' => 'Second', 'sort_order' => 2, 'status' => 'published', 'published_at' => null]);
+    $titles = static fn (): array => array_map(static fn (mixed $item): string => $item->title, BuildPublicStructuredContentItemsAction::run(StructuredContentType::Service, $site));
+    expect($titles())->toBe(['First', 'Second']);
+    $version = Cache::get('capell-structured-content-library:version');
+    $this->actingAs(new StructuredContentGlobalTestUser(global: $authorised, assignedSiteIds: [$site]));
+
+    Livewire::test(ListStructuredContentItems::class)->call('reorderTable', $authorised
+        ? [$second->getKey(), $second->getKey()]
+        : [$second->getKey(), $first->getKey()]);
+
+    expect($first->refresh()->sort_order)->toBe(1)->and($second->refresh()->sort_order)->toBe(2)
+        ->and(Cache::get('capell-structured-content-library:version'))->toBe($version)
+        ->and($titles())->toBe(['First', 'Second']);
+})->with([true, false]);
+
+it('keeps hidden and deleted sort values unchanged while swapping visible slots', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $site = $this->createStructuredContentSite('Reorder mixed scope');
+    $first = StructuredContentItem::factory()->create(['site_id' => null, 'sort_order' => 10, 'status' => 'published']);
+    $hidden = StructuredContentItem::factory()->create(['site_id' => $site, 'sort_order' => 20, 'status' => 'draft']);
+    $deleted = StructuredContentItem::factory()->create(['site_id' => null, 'sort_order' => 25, 'status' => 'published']);
+    $deleted->delete();
+    $last = StructuredContentItem::factory()->create(['site_id' => $site, 'sort_order' => 30, 'status' => 'published']);
+
+    Livewire::test(ListStructuredContentItems::class)->filterTable('status', 'published')
+        ->call('reorderTable', [$last->getKey(), $first->getKey()]);
+
+    expect($last->refresh()->sort_order)->toBe(10)
+        ->and($first->refresh()->sort_order)->toBe(30)
+        ->and($hidden->refresh()->sort_order)->toBe(20)
+        ->and($deleted->refresh()->sort_order)->toBe(25);
+    $deleted->restore();
+    expect($deleted->refresh()->sort_order)->toBe(25);
+});
+
+it('rejects deleted and filtered out record keys in a reorder request', function (bool $deleted): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $visible = StructuredContentItem::factory()->create(['sort_order' => 10, 'status' => 'published']);
+    $hidden = StructuredContentItem::factory()->create(['sort_order' => 20, 'status' => $deleted ? 'published' : 'draft']);
+    if ($deleted) {
+        $hidden->delete();
+    }
+
+    Livewire::test(ListStructuredContentItems::class)->filterTable('status', 'published')
+        ->call('reorderTable', [$hidden->getKey(), $visible->getKey()]);
+
+    expect($visible->refresh()->sort_order)->toBe(10)
+        ->and($hidden->refresh()->sort_order)->toBe(20);
+})->with([false, true]);
+
+it('normalises duplicate sort values within the reordered set so the requested order sticks', function (): void {
+    $this->actingAs(new StructuredContentGlobalTestUser);
+    $a = StructuredContentItem::factory()->create(['site_id' => null, 'sort_order' => 5, 'status' => 'published']);
+    $b = StructuredContentItem::factory()->create(['site_id' => null, 'sort_order' => 5, 'status' => 'published']);
+    $c = StructuredContentItem::factory()->create(['site_id' => null, 'sort_order' => 5, 'status' => 'published']);
+
+    Livewire::test(ListStructuredContentItems::class)
+        ->call('reorderTable', [$c->getKey(), $a->getKey(), $b->getKey()]);
+
+    $positions = [$c, $a, $b];
+    $values = array_map(static fn (StructuredContentItem $item): int => (int) $item->refresh()->sort_order, $positions);
+
+    expect($values)->toBe([5, 6, 7])
+        ->and(StructuredContentItem::query()->ordered()->pluck('id')->all())->toBe([$c->getKey(), $a->getKey(), $b->getKey()]);
 });
