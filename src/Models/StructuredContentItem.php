@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Models;
 
+use Capell\Core\Concerns\HasCapellTable;
 use Capell\Core\Models\Site;
 use Capell\StructuredContentLibrary\Data\StructuredContentPayloadData;
 use Capell\StructuredContentLibrary\Database\Factories\StructuredContentItemFactory;
@@ -47,6 +48,8 @@ use Override;
  */
 class StructuredContentItem extends Model
 {
+    use HasCapellTable;
+
     /** @use HasFactory<StructuredContentItemFactory> */
     use HasFactory;
 
@@ -82,6 +85,7 @@ class StructuredContentItem extends Model
         return $this->belongsTo(Site::class);
     }
 
+    #[Override]
     protected static function booted(): void
     {
         static::creating(function (self $item): void {

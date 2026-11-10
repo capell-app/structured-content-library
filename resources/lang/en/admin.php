@@ -7,7 +7,7 @@ return [
     'availability' => 'Availability',
     'saved_availability' => 'Saved content availability',
     'available' => 'Available for use',
-    'scheduled' => 'Scheduled — :time',
+    'scheduled' => 'Scheduled for :time',
     'preview_help' => 'Preview of saved content, including drafts and scheduled items. Save changes to refresh it. Availability controls when themes and sections can use this content; this preview is not a standalone public page. Your theme controls the final layout.',
     'choose_type' => 'What are you adding?',
     'section_common' => 'Title and status',

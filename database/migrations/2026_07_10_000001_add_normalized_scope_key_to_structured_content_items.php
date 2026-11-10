@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Support\TableName;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
@@ -13,23 +14,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('structured_content_items')) {
+        if (! Schema::hasTable(TableName::resolve('structured_content_items'))) {
             return;
         }
 
-        if (! Schema::hasColumn('structured_content_items', 'site_scope_key')) {
-            Schema::table('structured_content_items', function (Blueprint $table): void {
+        if (! Schema::hasColumn(TableName::resolve('structured_content_items'), 'site_scope_key')) {
+            Schema::table(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
                 $table->string('site_scope_key', 20)->default('global')->after('site_id');
             });
         }
 
-        DB::table('structured_content_items')
+        DB::table(TableName::resolve('structured_content_items'))
             ->select(['id', 'site_id'])
             ->whereNotNull('site_id')
             ->orderBy('id')
             ->chunkById(500, function (Collection $items): void {
                 $items->each(function (stdClass $item): void {
-                    DB::table('structured_content_items')
+                    DB::table(TableName::resolve('structured_content_items'))
                         ->where('id', (int) $item->id)
                         ->update(['site_scope_key' => (string) $item->site_id]);
                 });
@@ -37,11 +38,11 @@ return new class extends Migration
 
         $this->deduplicateScopedSlugs();
 
-        if (! Schema::hasIndex('structured_content_items', 'structured_content_type_scope_slug_unique')) {
-            Schema::table('structured_content_items', function (Blueprint $table): void {
+        if (! Schema::hasIndex(TableName::resolve('structured_content_items'), TableName::namedIndex('structured_content_items', 'structured_content_type_scope_slug_unique'))) {
+            Schema::table(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
                 $table->unique(
                     ['type', 'site_scope_key', 'slug'],
-                    'structured_content_type_scope_slug_unique',
+                    TableName::namedIndex('structured_content_items', 'structured_content_type_scope_slug_unique'),
                 );
             });
         }
@@ -49,13 +50,13 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (! Schema::hasTable('structured_content_items') || ! Schema::hasColumn('structured_content_items', 'site_scope_key')) {
+        if (! Schema::hasTable(TableName::resolve('structured_content_items')) || ! Schema::hasColumn(TableName::resolve('structured_content_items'), 'site_scope_key')) {
             return;
         }
 
-        Schema::table('structured_content_items', function (Blueprint $table): void {
-            if (Schema::hasIndex('structured_content_items', 'structured_content_type_scope_slug_unique')) {
-                $table->dropUnique('structured_content_type_scope_slug_unique');
+        Schema::table(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
+            if (Schema::hasIndex(TableName::resolve('structured_content_items'), TableName::namedIndex('structured_content_items', 'structured_content_type_scope_slug_unique'))) {
+                $table->dropUnique(TableName::namedIndex('structured_content_items', 'structured_content_type_scope_slug_unique'));
             }
 
             $table->dropColumn('site_scope_key');
@@ -67,7 +68,7 @@ return new class extends Migration
         /** @var array<string, true> $seenSlugs */
         $seenSlugs = [];
 
-        $items = DB::table('structured_content_items')
+        $items = DB::table(TableName::resolve('structured_content_items'))
             ->select(['id', 'type', 'site_scope_key', 'slug'])
             ->whereNotNull('slug')
             ->orderBy('id')
@@ -86,7 +87,7 @@ return new class extends Migration
 
             $deduplicatedSlug = $this->deduplicatedSlug((string) $item->type, $scopeKey, $slug);
 
-            DB::table('structured_content_items')
+            DB::table(TableName::resolve('structured_content_items'))
                 ->where('id', (int) $item->id)
                 ->update(['slug' => $deduplicatedSlug]);
 
@@ -103,7 +104,7 @@ return new class extends Migration
             $suffixText = '-' . $suffix;
             $candidateSlug = Str::limit($candidateBaseSlug, 255 - strlen($suffixText), '') . $suffixText;
             $suffix++;
-        } while (DB::table('structured_content_items')
+        } while (DB::table(TableName::resolve('structured_content_items'))
             ->where('type', $type)
             ->where('site_scope_key', $scopeKey)
             ->where('slug', $candidateSlug)

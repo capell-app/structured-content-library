@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Support\TableName;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,13 +12,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('structured_content_items')) {
+        if (TableName::existsAndIsOwned('structured_content_items', basename(__FILE__, '.php'))) {
             return;
         }
 
-        Schema::create('structured_content_items', function (Blueprint $table): void {
+        Schema::create(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('site_id')->nullable()->constrained('sites')->nullOnDelete();
+            $table->foreignId('site_id')->nullable()->constrained(TableName::resolve('sites'))->nullOnDelete();
             $table->string('type')->index();
             $table->string('status')->default(StructuredContentStatus::Draft->value)->index();
             $table->string('title');
@@ -30,14 +31,14 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->index(['site_id', 'type', 'status', 'sort_order'], 'structured_content_site_type_status_order_index');
-            $table->index(['type', 'slug'], 'structured_content_type_slug_index');
-            $table->unique(['type', 'site_id', 'slug'], 'structured_content_type_site_slug_unique');
+            $table->index(['site_id', 'type', 'status', 'sort_order'], TableName::namedIndex('structured_content_items', 'structured_content_site_type_status_order_index'));
+            $table->index(['type', 'slug'], TableName::namedIndex('structured_content_items', 'structured_content_type_slug_index'));
+            $table->unique(['type', 'site_id', 'slug'], TableName::namedIndex('structured_content_items', 'structured_content_type_site_slug_unique'));
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('structured_content_items');
+        Schema::dropIfExists(TableName::resolve('structured_content_items'));
     }
 };

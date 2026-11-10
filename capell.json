@@ -8,7 +8,7 @@
     "version": "1.0.0",
     "description": "Maintain portable, reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations and logos.",
     "product": {
-        "group": "Capell Foundation",
+        "group": "Capell Essentials",
         "tier": "free",
         "bundle": "foundation"
     },
@@ -23,7 +23,9 @@
         "conflicts": []
     },
     "providers": {
-        "metadata": [],
+        "metadata": [
+            "Capell\\StructuredContentLibrary\\Providers\\MigrationMetadataServiceProvider"
+        ],
         "install": [],
         "runtime": [
             "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider"
@@ -171,7 +173,38 @@
     "marketplace": {
         "summary": "A typed content library for testimonials, case studies, team members, FAQs, services and more: reusable, theme-safe records your themes render anywhere.",
         "description": "Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.",
+        "problem": "Editors repeat details such as testimonials across pages when they have no shared records.",
+        "outcome": "A site has reusable structured records that consuming sections and themes can use.",
+        "faq": [
+            {
+                "question": "Which content can be stored?",
+                "answer": "Editors can store reusable records such as case studies, testimonials, team members and services."
+            },
+            {
+                "question": "Where do editors maintain items?",
+                "answer": "Structured items are maintained in one admin resource."
+            },
+            {
+                "question": "How does public content use records?",
+                "answer": "Content Sections and themes receive hydrated public data without querying models from public views."
+            }
+        ],
         "screenshots": [
+            {
+                "path": "docs/assets/marketplace/listing-structured-content-list.png",
+                "alt": "Structured content item list",
+                "caption": "Structured content item list"
+            },
+            {
+                "path": "docs/assets/marketplace/listing-structured-content-form.png",
+                "alt": "Structured content create form",
+                "caption": "Structured content create form"
+            },
+            {
+                "path": "docs/assets/marketplace/listing-structured-content-theme-rendering.png",
+                "alt": "Structured content reusable item edit form",
+                "caption": "Structured content reusable item edit form"
+            },
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
                 "alt": "Structured Content Library extension preview image",

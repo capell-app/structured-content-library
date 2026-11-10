@@ -48,7 +48,7 @@ Delete moves an item to the trash and removes it from normal consumers. Restore 
 
 Integrators can use `ImportStructuredContentItemsAction` to create or update records by type, Site, and slug. Updates are enabled by default; disabling them skips matching items. The import is processed item by item rather than as one batch transaction, so records completed before a later validation or permission failure remain stored and should be reconciled from the returned counts/source data.
 
-All titles, summaries, content, testimonial attribution, email, phone, and address payload fields are stored in plaintext. The package does not register a Privacy Center exporter or eraser. Avoid using it for subject-request data unless the owning feature supplies export, retention, correction, and erasure handling for these records and backups.
+All titles, summaries, content, testimonial attribution, email, phone, and address payload fields are stored in plaintext. The package does not register a Privacy Centre exporter or eraser. Avoid using it for subject-request data unless the owning feature supplies export, retention, correction, and erasure handling for these records and backups.
 
 ---
 

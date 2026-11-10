@@ -8,6 +8,7 @@ use Capell\Admin\Data\AdminSurfaceContributionData;
 use Capell\Admin\Facades\CapellAdmin;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Support\Packages\AbstractPackageServiceProvider;
+use Capell\Core\Support\TableName;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Console\Commands\SeedStructuredContentScreenshotFixtureCommand;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
@@ -82,7 +83,7 @@ final class StructuredContentLibraryServiceProvider extends AbstractPackageServi
 
     private function registerProtectedTables(): self
     {
-        CapellCore::registerProtectedTable('structured_content_items');
+        CapellCore::registerProtectedTable(TableName::resolve('structured_content_items'));
 
         return $this;
     }

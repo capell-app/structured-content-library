@@ -19,7 +19,7 @@ final class SeedStructuredContentScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
-        require_once dirname(__DIR__, 4) . '/scripts/screenshots/FixtureState.php';
+        require_once (str_contains(__DIR__, '/vendor/capell-app/') ? dirname(__DIR__, 5) : dirname(__DIR__, 4)) . '/scripts/screenshots/FixtureState.php';
         FixtureState::boot();
 
         (new StructuredContentItem)->getConnection()->transaction(static function (): void {
@@ -32,7 +32,7 @@ final class SeedStructuredContentScreenshotFixtureAction
     {
         self::assertDisposableScreenshotEnvironment();
 
-        require_once dirname(__DIR__, 4) . '/scripts/screenshots/FixtureState.php';
+        require_once (str_contains(__DIR__, '/vendor/capell-app/') ? dirname(__DIR__, 5) : dirname(__DIR__, 4)) . '/scripts/screenshots/FixtureState.php';
         FixtureState::boot();
 
         return (new StructuredContentItem)->getConnection()->transaction(static function (): StructuredContentItem {
@@ -127,8 +127,8 @@ final class SeedStructuredContentScreenshotFixtureAction
                 && is_string($basePath)
                 && is_string($appPath)
                 && $basePath === $appPath
-                && ($basePath === realpath(dirname(__DIR__, 4) . '/vendor/orchestra/testbench-core/laravel')
-                    || str_starts_with($basePath, dirname(__DIR__, 4) . '/tmp/testbench-skeletons/')),
+                && ($basePath === realpath((str_contains(__DIR__, '/vendor/capell-app/') ? dirname(__DIR__, 5) : dirname(__DIR__, 4)) . '/vendor/orchestra/testbench-core/laravel')
+                    || str_starts_with($basePath, (str_contains(__DIR__, '/vendor/capell-app/') ? dirname(__DIR__, 5) : dirname(__DIR__, 4)) . '/tmp/testbench-skeletons/')),
             RuntimeException::class,
             'Structured Content Library screenshot fixtures require the explicit disposable local screenshot environment.',
         );

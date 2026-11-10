@@ -108,13 +108,39 @@ it('declares the marketplace screenshot contract without promoting mock captures
         ->all();
 
     expect($manifestPaths)->toBe([
+        'docs/assets/marketplace/listing-structured-content-list.png',
+        'docs/assets/marketplace/listing-structured-content-form.png',
+        'docs/assets/marketplace/listing-structured-content-theme-rendering.png',
         'docs/assets/marketplace/extension-card.jpg',
     ]);
+
+    $entriesById = collect($entries)->keyBy('id');
 
     foreach ($manifestPaths as $path) {
         throw_unless(is_string($path), RuntimeException::class, 'Structured Content screenshot paths must be strings.');
 
         expect(File::exists(__DIR__ . '/../../../' . $path))->toBeTrue();
+
+        // A listing capture is a byte-for-byte copy of an accepted runner capture of a
+        // required contract entry; anything else (a mock or a one-off image) is refused.
+        if (! str_starts_with(basename($path), 'listing-')) {
+            continue;
+        }
+
+        $entry = $entriesById->get(substr(basename($path, '.png'), strlen('listing-')));
+
+        throw_unless(is_array($entry), RuntimeException::class, "Listing capture {$path} has no screenshot contract entry.");
+
+        $screenshotPath = $entry['screenshotPath'] ?? null;
+
+        throw_unless(is_string($screenshotPath), RuntimeException::class, "Listing capture {$path} has no accepted capture path.");
+
+        $capture = __DIR__ . '/../../../docs/screenshots/' . basename($screenshotPath);
+
+        expect($entry['required'] ?? false)->toBeTrue()
+            ->and($entry)->not->toHaveKey('fixtureKind')
+            ->and(File::exists($capture))->toBeTrue()
+            ->and(hash_file('sha256', __DIR__ . '/../../../' . $path))->toBe(hash_file('sha256', $capture));
     }
 
     expect(collect($entries)->pluck('id')->all())->toBe([

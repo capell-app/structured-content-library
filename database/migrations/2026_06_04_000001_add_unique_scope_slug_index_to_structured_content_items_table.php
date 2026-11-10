@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Capell\Core\Support\TableName;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -12,33 +13,33 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('structured_content_items')) {
+        if (! Schema::hasTable(TableName::resolve('structured_content_items'))) {
             return;
         }
 
-        if (Schema::hasIndex('structured_content_items', 'structured_content_type_site_slug_unique')) {
+        if (Schema::hasIndex(TableName::resolve('structured_content_items'), TableName::namedIndex('structured_content_items', 'structured_content_type_site_slug_unique'))) {
             return;
         }
 
         $this->deduplicateScopedSlugs();
 
-        Schema::table('structured_content_items', function (Blueprint $table): void {
-            $table->unique(['type', 'site_id', 'slug'], 'structured_content_type_site_slug_unique');
+        Schema::table(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
+            $table->unique(['type', 'site_id', 'slug'], TableName::namedIndex('structured_content_items', 'structured_content_type_site_slug_unique'));
         });
     }
 
     public function down(): void
     {
-        if (! Schema::hasTable('structured_content_items')) {
+        if (! Schema::hasTable(TableName::resolve('structured_content_items'))) {
             return;
         }
 
-        if (! Schema::hasIndex('structured_content_items', 'structured_content_type_site_slug_unique')) {
+        if (! Schema::hasIndex(TableName::resolve('structured_content_items'), TableName::namedIndex('structured_content_items', 'structured_content_type_site_slug_unique'))) {
             return;
         }
 
-        Schema::table('structured_content_items', function (Blueprint $table): void {
-            $table->dropUnique('structured_content_type_site_slug_unique');
+        Schema::table(TableName::resolve('structured_content_items'), function (Blueprint $table): void {
+            $table->dropUnique(TableName::namedIndex('structured_content_items', 'structured_content_type_site_slug_unique'));
         });
     }
 
@@ -47,7 +48,7 @@ return new class extends Migration
         $reservedSlugsByScope = [];
         $seenScopedSlugs = [];
 
-        $items = DB::table('structured_content_items')
+        $items = DB::table(TableName::resolve('structured_content_items'))
             ->select(['id', 'type', 'site_id', 'slug'])
             ->whereNotNull('slug')
             ->orderBy('type')
@@ -79,7 +80,7 @@ return new class extends Migration
                 reservedSlugs: $reservedSlugsByScope[$scopeKey],
             );
 
-            DB::table('structured_content_items')
+            DB::table(TableName::resolve('structured_content_items'))
                 ->where('id', (int) $item->id)
                 ->update(['slug' => $deduplicatedSlug]);
 

@@ -7,6 +7,7 @@ namespace Capell\StructuredContentLibrary\Support\RichEditor;
 use Filament\Forms\Components\RichEditor\StateCasts\RichEditorStateCast;
 use Illuminate\Contracts\Support\Htmlable;
 use Override;
+use ReflectionClass;
 use stdClass;
 use Tiptap\Core\DOMParser;
 use Tiptap\Editor;
@@ -28,7 +29,17 @@ final class PortableRichEditorStateCast extends RichEditorStateCast
                 : new DOMParser($this->richEditor->getTipTapEditor()->schema)->process($state);
         }
 
-        return parent::set($state);
+        $document = parent::set($state);
+
+        // Filament 5.10.3 removed the parent's normalizeListItemContent() hook, so nothing calls
+        // the override below any more; run it explicitly there. Earlier versions call the hook.
+        if (! new ReflectionClass(parent::class)->hasMethod('normalizeListItemContent')) {
+            $editor = $this->richEditor->getTipTapEditor()->setContent($document);
+            $this->normalizeListItemContent($editor);
+            $document = $editor->getDocument();
+        }
+
+        return $document;
     }
 
     /** @return string|array<string, mixed> */
@@ -46,7 +57,8 @@ final class PortableRichEditorStateCast extends RichEditorStateCast
         return parent::get($state);
     }
 
-    #[Override]
+    // No #[Override]: the parent hook exists up to Filament 5.10.2 and was removed in 5.10.3,
+    // and the attribute fatals at class load when the parent method is absent.
     protected function normalizeListItemContent(Editor $editor): void
     {
         $editor->descendants(function (stdClass &$node): void {

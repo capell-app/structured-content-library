@@ -8,6 +8,7 @@ use Capell\Admin\Facades\CapellAdmin;
 use Capell\Core\Contracts\Extensions\ChecksExtensionHealth;
 use Capell\Core\Data\Diagnostics\DoctorCheckResultData;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Support\TableName;
 use Capell\StructuredContentLibrary\Enums\ResourceEnum;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Illuminate\Support\Collection;
@@ -114,7 +115,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
 
     public function hasStorageTable(): bool
     {
-        return Schema::hasTable(self::StorageTableName);
+        return Schema::hasTable(TableName::resolve(self::StorageTableName));
     }
 
     public function hasModelRegistered(): bool
@@ -124,7 +125,7 @@ final class StructuredContentLibraryHealthCheck implements ChecksExtensionHealth
 
     public function hasProtectedTable(): bool
     {
-        return in_array(self::StorageTableName, CapellCore::getProtectedTables(), true);
+        return in_array(TableName::resolve(self::StorageTableName), CapellCore::getProtectedTables(), true);
     }
 
     public function hasAdminResource(): bool
