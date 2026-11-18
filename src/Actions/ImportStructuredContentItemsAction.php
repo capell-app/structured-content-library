@@ -12,6 +12,10 @@ use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
 /**
+ * Imports run from the console, a queued job or a seeder with nobody signed in, so they write as a
+ * trusted system operation. A signed-in actor, or any web request, is still authorised record by
+ * record against the policy and site scope.
+ *
  * @method static StructuredContentImportResultData run(iterable<int, array<string, mixed>|StructuredContentItemData> $items, bool $updateExisting = true)
  */
 final class ImportStructuredContentItemsAction
@@ -27,6 +31,7 @@ final class ImportStructuredContentItemsAction
         $created = 0;
         $updated = 0;
         $skipped = 0;
+        $authorize = auth()->user() !== null || ! app()->runningInConsole();
 
         foreach ($items as $item) {
             $data = $item instanceof StructuredContentItemData
@@ -42,13 +47,13 @@ final class ImportStructuredContentItemsAction
             }
 
             if ($existing instanceof StructuredContentItem) {
-                UpdateStructuredContentItemAction::run($existing, $data);
+                UpdateStructuredContentItemAction::run($existing, $data, $authorize);
                 $updated++;
 
                 continue;
             }
 
-            CreateStructuredContentItemAction::run($data);
+            CreateStructuredContentItemAction::run($data, $authorize);
             $created++;
         }
 

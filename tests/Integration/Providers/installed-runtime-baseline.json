@@ -4,11 +4,11 @@
     "scenarios": {
         "default": {
             "source": {
-                "ref": "c92ce184be4d91c372f35ca125ea25f6c1308599",
-                "commit": "c92ce184be4d91c372f35ca125ea25f6c1308599",
+                "ref": "HEAD",
+                "commit": "3465441f1af5a1246bb22328bdc52eaca986c98d",
                 "providers": {
                     "Providers/MigrationMetadataServiceProvider.php": "9e721b99974669ed1de7d43b2e4e533b00af27fda48cccfd7d4ac59f855e9e42",
-                    "Providers/StructuredContentLibraryServiceProvider.php": "edd0c6567907e7305427052c0d2fc257932b4dbdd57364d9cdd35fd5bb58ac1f"
+                    "Providers/StructuredContentLibraryServiceProvider.php": "5f40592da382bd28547a40b170666b43eb7131b164875c68d49513bbc28bd6c8"
                 },
                 "configure": null
             },
@@ -37,8 +37,18 @@
                     ]
                 ],
                 "commands": {
-                    "capell:structured-content-library-screenshot-fixture": "Capell\\StructuredContentLibrary\\Console\\Commands\\SeedStructuredContentScreenshotFixtureCommand"
+                    "capell:structured-content-library-screenshot-fixture": "Capell\\StructuredContentLibrary\\Console\\Commands\\SeedStructuredContentScreenshotFixtureCommand",
+                    "structured-content-library:invalidate-due-caches": "Capell\\StructuredContentLibrary\\Console\\Commands\\InvalidateDueScheduledStructuredContentCachesCommand"
                 },
+                "config-defaults": {
+                    "capell-structured-content-library.php": {
+                        "public_cache_ttl_seconds": 300
+                    }
+                },
+                "config-keys": [
+                    "capell-structured-content-library",
+                    "capell-structured-content-library.public_cache_ttl_seconds"
+                ],
                 "config-values": {
                     "app.providers": [
                         "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider",
@@ -53,33 +63,58 @@
                             []
                         ]
                     ],
+                    "eloquent.deleted: Capell\\Core\\Models\\Language": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                    ],
+                    "eloquent.deleted: Capell\\Core\\Models\\Media": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                    ],
+                    "eloquent.deleted: Capell\\Core\\Models\\Translation": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                    ],
                     "eloquent.deleted: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentPublicOutputObserver@deleted"
+                    ],
+                    "eloquent.deleting: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
                         [
-                            "<package>/src/Providers/StructuredContentLibraryServiceProvider.php",
-                            "static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void source=ef7919abec28bd35905505223bca4209",
+                            "<vendor>/spatie/laravel-medialibrary/src/InteractsWithMedia.php",
+                            "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem(Spatie\\MediaLibrary\\HasMedia $model):",
                             []
                         ]
                     ],
                     "eloquent.forceDeleted: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentPublicOutputObserver@forceDeleted"
+                    ],
+                    "eloquent.forceDeleting: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
                         [
-                            "<package>/src/Providers/StructuredContentLibraryServiceProvider.php",
-                            "static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void source=1248cab68b1d078be5181385caf2e200",
+                            "<package>/src/Models/StructuredContentItem.php",
+                            "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem(self $item):void source=6579210d2fe492f1ede67de25696a09f",
                             []
                         ]
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Language": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Media": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Translation": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
                     ],
                     "eloquent.restored: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
-                        [
-                            "<package>/src/Providers/StructuredContentLibraryServiceProvider.php",
-                            "static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void source=bc6d10aae3bf5c0cd6447e78544442d5",
-                            []
-                        ]
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentPublicOutputObserver@restored"
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Language": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Media": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Translation": [
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
                     ],
                     "eloquent.saved: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
-                        [
-                            "<package>/src/Providers/StructuredContentLibraryServiceProvider.php",
-                            "static Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider(Capell\\StructuredContentLibrary\\Models\\StructuredContentItem $item):void source=094a3158051552a4c0018968c4755ea2",
-                            []
-                        ]
+                        "Capell\\StructuredContentLibrary\\Observers\\StructuredContentPublicOutputObserver@saved"
                     ],
                     "eloquent.updating: Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
                         [
@@ -87,6 +122,77 @@
                             "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem(self $item):void source=886397e31b9b1a4ff9efd3106fb51c41",
                             []
                         ]
+                    ]
+                },
+                "listeners-positions": {
+                    "eloquent.deleted: Capell\\Core\\Models\\Language": [
+                        {
+                            "after": "Capell\\Core\\Observers\\LanguageObserver@deleted",
+                            "before": "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@deleted",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                        }
+                    ],
+                    "eloquent.deleted: Capell\\Core\\Models\\Media": [
+                        {
+                            "after": "Capell\\Core\\Observers\\MediaPropertyReferenceObserver@deleted",
+                            "before": "Spatie\\MediaLibrary\\MediaCollections\\Models\\Observers\\MediaObserver@deleted",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                        }
+                    ],
+                    "eloquent.deleted: Capell\\Core\\Models\\Translation": [
+                        {
+                            "after": null,
+                            "before": "Capell\\Core\\Listeners\\PageTranslationDeletedListener",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@deleted"
+                        }
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Language": [
+                        {
+                            "after": "Capell\\Core\\Observers\\LanguageObserver@restored",
+                            "before": "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@restored",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
+                        }
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Media": [
+                        {
+                            "after": null,
+                            "before": "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@restored",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
+                        }
+                    ],
+                    "eloquent.restored: Capell\\Core\\Models\\Translation": [
+                        {
+                            "after": null,
+                            "before": [
+                                "<vendor>/spatie/laravel-activitylog/src/Traits/LogsActivity.php",
+                                "Capell\\Core\\Models\\Translation(Illuminate\\Database\\Eloquent\\Model $model):",
+                                {
+                                    "eventName": "restored"
+                                }
+                            ],
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@restored"
+                        }
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Language": [
+                        {
+                            "after": "Capell\\Core\\Observers\\LanguageObserver@saved",
+                            "before": "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@saved",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
+                        }
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Media": [
+                        {
+                            "after": null,
+                            "before": "Capell\\Frontend\\Support\\Cache\\FrontendCacheInvalidationObserver@saved",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
+                        }
+                    ],
+                    "eloquent.saved: Capell\\Core\\Models\\Translation": [
+                        {
+                            "after": null,
+                            "before": "Capell\\Core\\Listeners\\PageTranslationSavedListener",
+                            "entry": "Capell\\StructuredContentLibrary\\Observers\\StructuredContentRelatedRecordObserver@saved"
+                        }
                     ]
                 },
                 "manifest-health": [
@@ -195,11 +301,23 @@
                     "Capell\\Frontend\\Support\\Cache\\CacheInvalidationDependencyRegistry": {
                         "modelDependencies": {
                             "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
-                                "structured-content-library-*"
+                                "structured-content-library-*",
+                                "page-*",
+                                "homepage-*",
+                                "system-page-*"
                             ]
                         }
                     }
                 },
+                "schedule": [
+                    [
+                        "'<php>' 'artisan' structured-content-library:invalidate-due-caches",
+                        "* * * * *",
+                        null,
+                        true,
+                        null
+                    ]
+                ],
                 "views": {
                     "capell-structured-content-library": [
                         "<package>/resources/views"
@@ -216,8 +334,18 @@
                     ]
                 ],
                 "commands": {
-                    "capell:structured-content-library-screenshot-fixture": "Capell\\StructuredContentLibrary\\Console\\Commands\\SeedStructuredContentScreenshotFixtureCommand"
+                    "capell:structured-content-library-screenshot-fixture": "Capell\\StructuredContentLibrary\\Console\\Commands\\SeedStructuredContentScreenshotFixtureCommand",
+                    "structured-content-library:invalidate-due-caches": "Capell\\StructuredContentLibrary\\Console\\Commands\\InvalidateDueScheduledStructuredContentCachesCommand"
                 },
+                "config-defaults": {
+                    "capell-structured-content-library.php": {
+                        "public_cache_ttl_seconds": 300
+                    }
+                },
+                "config-keys": [
+                    "capell-structured-content-library",
+                    "capell-structured-content-library.public_cache_ttl_seconds"
+                ],
                 "config-values": {
                     "app.providers": [
                         "Capell\\StructuredContentLibrary\\Providers\\StructuredContentLibraryServiceProvider",

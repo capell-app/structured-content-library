@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Data;
 
+use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Spatie\LaravelData\Data;
@@ -42,6 +43,29 @@ final class StructuredContentDefinitionData extends Data
     public function groupLabel(): string
     {
         return __('capell-structured-content-library::admin.types.' . $this->type->value . '.group');
+    }
+
+    /**
+     * The media collection holding this type's picture: a photo or illustration for records that
+     * describe it with image alt text, a logo for partners and logos, none for FAQs and locations.
+     */
+    public function mediaCollection(): ?MediaCollectionEnum
+    {
+        return match (true) {
+            in_array(StructuredContentPayloadField::LogoAlt, $this->fields, true) => MediaCollectionEnum::Logo,
+            in_array(StructuredContentPayloadField::ImageAlt, $this->fields, true) => MediaCollectionEnum::Image,
+            default => null,
+        };
+    }
+
+    /** The payload field whose text describes this type's picture to people who cannot see it. */
+    public function mediaAltField(): ?StructuredContentPayloadField
+    {
+        return match ($this->mediaCollection()) {
+            MediaCollectionEnum::Logo => StructuredContentPayloadField::LogoAlt,
+            MediaCollectionEnum::Image => StructuredContentPayloadField::ImageAlt,
+            default => null,
+        };
     }
 
     /** @return list<string> */

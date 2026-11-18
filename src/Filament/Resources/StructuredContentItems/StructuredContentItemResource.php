@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems;
 
 use BackedEnum;
+use Capell\Admin\Enums\NavigationGroupEnum;
 use Capell\Admin\Support\SiteScope;
+use Capell\Core\Enums\MediaCollectionEnum;
 use Capell\Core\Facades\CapellCore;
+use Capell\Core\Models\Language;
 use Capell\Core\Models\Site;
 use Capell\Core\Support\Permissions\SiteAccess;
 use Capell\StructuredContentLibrary\Actions\DescribeStructuredContentAvailabilityAction;
@@ -17,6 +20,7 @@ use Capell\StructuredContentLibrary\Data\StructuredContentDefinitionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentPayloadField;
 use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
+use Capell\StructuredContentLibrary\Filament\Components\StructuredContentMediaUpload;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\CreateStructuredContentItem;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\EditStructuredContentItem;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\ListStructuredContentItems;
@@ -35,6 +39,7 @@ use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -89,9 +94,19 @@ class StructuredContentItemResource extends Resource
                         ->helperText(fn (?StructuredContentItem $record): string => $record instanceof StructuredContentItem
                             ? __('capell-structured-content-library::validation.type_locked')
                             : __('capell-structured-content-library::admin.type_choice_help'))
-                        ->afterStateUpdated(function (Set $set, ?StructuredContentItem $record): void {
-                            if (! $record instanceof StructuredContentItem) {
-                                $set('payload', []);
+                        ->afterStateUpdated(function (Get $get, Set $set, ?StructuredContentItem $record): void {
+                            if ($record instanceof StructuredContentItem) {
+                                return;
+                            }
+
+                            $set('payload', []);
+                            $translations = $get('translations');
+
+                            if (is_array($translations)) {
+                                $set('translations', array_map(
+                                    static fn (mixed $translation): mixed => is_array($translation) ? [...$translation, 'payload' => []] : $translation,
+                                    $translations,
+                                ));
                             }
                         }),
                 ])
@@ -133,7 +148,10 @@ class StructuredContentItemResource extends Resource
             Section::make(fn (Get $get): string => ($type = self::payloadTypeFromState($get('type'))) instanceof StructuredContentType
                 ? StructuredContentDefinitionData::forType($type)->groupLabel()
                 : '')
-                ->schema(array_map(self::payloadField(...), StructuredContentPayloadField::cases()))
+                ->schema([
+                    ...array_map(self::mediaField(...), [MediaCollectionEnum::Image, MediaCollectionEnum::Logo]),
+                    ...array_map(self::payloadField(...), StructuredContentPayloadField::cases()),
+                ])
                 ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
                 ->columns(2)
                 ->columnSpanFull(),
@@ -163,9 +181,48 @@ class StructuredContentItemResource extends Resource
             Section::make(__('capell-structured-content-library::admin.section_publishing'))
                 ->schema([
                     DateTimePicker::make('published_at')
-                        ->label(__('capell-structured-content-library::admin.published_at')),
+                        ->label(__('capell-structured-content-library::admin.published_at'))
+                        ->helperText(__('capell-structured-content-library::admin.published_at_help')),
+                    DateTimePicker::make('expires_at')
+                        ->label(__('capell-structured-content-library::admin.expires_at'))
+                        ->helperText(__('capell-structured-content-library::admin.expires_at_help'))
+                        ->after('published_at'),
                 ])
+                ->columns(2)
                 ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType)
+                ->collapsed()
+                ->columnSpanFull(),
+            Section::make(__('capell-structured-content-library::admin.section_translations'))
+                ->description(__('capell-structured-content-library::admin.section_translations_help'))
+                ->schema([
+                    Repeater::make('translations')
+                        ->label(__('capell-structured-content-library::admin.translations'))
+                        ->hiddenLabel()
+                        ->addActionLabel(__('capell-structured-content-library::admin.translation_add'))
+                        ->itemLabel(fn (array $state): ?string => self::languageOptions()[(int) ($state['language_id'] ?? 0)] ?? null)
+                        ->collapsible()
+                        ->defaultItems(0)
+                        ->schema([
+                            Select::make('language_id')
+                                ->label(__('capell-structured-content-library::admin.translation_language'))
+                                ->options(self::languageOptions(...))
+                                ->required()
+                                ->distinct()
+                                ->live(),
+                            TextInput::make('title')
+                                ->label(__('capell-structured-content-library::admin.title'))
+                                ->required()
+                                ->maxLength(255),
+                            ...array_map(
+                                static fn (StructuredContentPayloadField $field): Field => self::payloadField($field, '../../type'),
+                                StructuredContentPayloadField::cases(),
+                            ),
+                            self::portableEditor('summary'),
+                            self::portableEditor('content'),
+                        ])
+                        ->columns(2),
+                ])
+                ->visible(fn (Get $get): bool => self::payloadTypeFromState($get('type')) instanceof StructuredContentType && self::languageOptions() !== [])
                 ->collapsed()
                 ->columnSpanFull(),
         ]);
@@ -202,6 +259,11 @@ class StructuredContentItemResource extends Resource
                     ->label(__('capell-structured-content-library::admin.published_at'))
                     ->dateTime()
                     ->sortable(),
+                TextColumn::make('expires_at')
+                    ->label(__('capell-structured-content-library::admin.expires_at'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('sort_order')
                     ->label(__('capell-structured-content-library::admin.sort_order'))
                     ->sortable(),
@@ -260,9 +322,9 @@ class StructuredContentItemResource extends Resource
     }
 
     #[Override]
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): NavigationGroupEnum
     {
-        return (string) __('capell-admin::navigation.group_content');
+        return NavigationGroupEnum::Website;
     }
 
     #[Override]
@@ -342,6 +404,20 @@ class StructuredContentItemResource extends Resource
             ]);
     }
 
+    /** @return array<int, string> */
+    private static function languageOptions(): array
+    {
+        return once(static function (): array {
+            $options = [];
+
+            foreach (Language::query()->ordered()->get(['id', 'name']) as $language) {
+                $options[(int) $language->id] = (string) $language->name;
+            }
+
+            return $options;
+        });
+    }
+
     /** @return array<int|string, string> */
     private static function siteOptions(): array
     {
@@ -357,7 +433,14 @@ class StructuredContentItemResource extends Resource
             : $sites;
     }
 
-    private static function payloadField(StructuredContentPayloadField $definition): Field
+    private static function mediaField(MediaCollectionEnum $collection): Field
+    {
+        return StructuredContentMediaUpload::make($collection)
+            ->visible(fn (Get $get): bool => ($type = self::payloadTypeFromState($get('type'))) instanceof StructuredContentType
+                && StructuredContentDefinitionData::forType($type)->mediaCollection() === $collection);
+    }
+
+    private static function payloadField(StructuredContentPayloadField $definition, string $typePath = 'type'): Field
     {
         $field = $definition->isMultiline()
             ? Textarea::make('payload.' . $definition->value)->rows(3)
@@ -367,7 +450,7 @@ class StructuredContentItemResource extends Resource
             ->label($definition->label())
             ->required($definition->isRequired())
             ->rules(fn (): array => $definition->rules())
-            ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, $definition->value));
+            ->visible(fn (Get $get): bool => self::isPayloadFieldVisible($get, $definition->value, $typePath));
     }
 
     /** @return array<string, string> */
@@ -440,9 +523,9 @@ class StructuredContentItemResource extends Resource
         return $options;
     }
 
-    private static function isPayloadFieldVisible(Get $get, string $field): bool
+    private static function isPayloadFieldVisible(Get $get, string $field, string $typePath = 'type'): bool
     {
-        $type = self::payloadTypeFromState($get('type'));
+        $type = self::payloadTypeFromState($get($typePath));
 
         return $type instanceof StructuredContentType
             && in_array($field, self::payloadFieldsForType($type), true);

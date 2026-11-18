@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Actions;
 
+use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Lorisleiva\Actions\Concerns\AsFake;
@@ -24,11 +25,9 @@ final class BuildStructuredContentSectionsAction
     public function handle(array $sections, ?int $siteId = null): array
     {
         $definitions = [];
-        $types = [];
 
         foreach ($sections as $key => $definition) {
             $type = $this->type($definition);
-            $types[] = $type;
             $definitions[] = [
                 'key' => (string) $key,
                 'type' => $type,
@@ -37,7 +36,7 @@ final class BuildStructuredContentSectionsAction
             ];
         }
 
-        $itemsByType = BuildPublicStructuredContentItemsForTypesAction::run($types, $siteId);
+        $itemsByType = $this->itemsByType($definitions, $siteId);
         $resolvedSections = [];
 
         foreach ($definitions as $definition) {
@@ -63,6 +62,54 @@ final class BuildStructuredContentSectionsAction
         }
 
         return $resolvedSections;
+    }
+
+    /**
+     * Reads each type once. A type whose every section is limited reads only as many records as
+     * its largest section shows; the others are read together in full.
+     *
+     * @param  list<array{key: string, type: StructuredContentType, label: string, limit: int|null}>  $definitions
+     * @return array<string, list<PublicStructuredContentItemData>>
+     */
+    private function itemsByType(array $definitions, ?int $siteId): array
+    {
+        /** @var array<string, array{type: StructuredContentType, limit: int|null}> $reads */
+        $reads = [];
+
+        foreach ($definitions as $definition) {
+            $type = $definition['type'];
+            $limit = $definition['limit'] === null ? null : max(0, $definition['limit']);
+            $current = $reads[$type->value] ?? null;
+
+            $reads[$type->value] = [
+                'type' => $type,
+                'limit' => $current === null
+                    ? $limit
+                    : ($current['limit'] === null || $limit === null ? null : max($current['limit'], $limit)),
+            ];
+        }
+
+        $unlimited = [];
+        $itemsByType = [];
+        $builder = BuildPublicStructuredContentItemsForTypesAction::make();
+
+        foreach ($reads as $read) {
+            if ($read['limit'] === null) {
+                $unlimited[] = $read['type'];
+
+                continue;
+            }
+
+            if ($read['limit'] > 0) {
+                $itemsByType = [...$itemsByType, ...$builder->limited($read['type'], $siteId, $read['limit'])];
+            }
+        }
+
+        if ($unlimited !== []) {
+            $itemsByType = [...$itemsByType, ...BuildPublicStructuredContentItemsForTypesAction::run($unlimited, $siteId)];
+        }
+
+        return $itemsByType;
     }
 
     /**

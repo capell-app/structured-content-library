@@ -40,15 +40,32 @@ final class BuildPublicStructuredContentItemsForTypesAction
     }
 
     /**
+     * One type's public records, reading at most $limit of them from the database.
+     *
+     * @return array<string, list<PublicStructuredContentItemData>>
+     */
+    public function limited(StructuredContentType $type, ?int $siteId = null, ?int $limit = null): array
+    {
+        return StructuredContentCache::rememberPublicItemsByTypes(
+            [$type],
+            $siteId,
+            fn (Collection $items): array => $this->build($items),
+            $limit,
+        );
+    }
+
+    /**
      * @param  Collection<int, StructuredContentItem>  $items
      * @return array<string, list<PublicStructuredContentItemData>>
      */
     private function build(Collection $items): array
     {
         $groupedItems = [];
+        // The public cache is keyed by locale, so each locale's wording is cached on its own.
+        $language = $items->isEmpty() ? null : ResolveStructuredContentLanguageAction::run(app()->getLocale());
 
         foreach ($items as $item) {
-            $groupedItems[$item->type->value][] = BuildPublicStructuredContentItemDataAction::run($item);
+            $groupedItems[$item->type->value][] = BuildPublicStructuredContentItemDataAction::run($item, $language);
         }
 
         return $groupedItems;

@@ -1,6 +1,6 @@
 {
     "name": "capell-app/structured-content-library",
-    "description": "Typed, portable content records (testimonials, case studies, team, FAQs, services…) that Capell themes and packages render safely.",
+    "description": "Reusable testimonials, FAQs, team members and other business records for Capell, published by site and date.",
     "keywords": [
         "capell",
         "structured-content",
@@ -26,6 +26,9 @@
         "spatie/laravel-data": "^4.5",
         "spatie/laravel-package-tools": "^1.14.1",
         "ueberdosis/tiptap-php": "^2.2"
+    },
+    "suggest": {
+        "capell-app/publishing-studio": "Keeps a revision history of published structured content and lets editors restore an earlier version."
     },
     "autoload": {
         "psr-4": {

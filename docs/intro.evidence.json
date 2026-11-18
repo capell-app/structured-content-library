@@ -1,0 +1,108 @@
+[
+    {
+        "claim": "Your editors can keep content that turns up on several pages, such as a testimonial or a team profile, as a single record and edit it once.",
+        "evidence": [
+            "src/Models/StructuredContentItem.php",
+            "src/Enums/StructuredContentType.php"
+        ]
+    },
+    {
+        "claim": "Structured Content Items sits in the Website group of the admin menu and holds nine kinds of record, such as testimonials, FAQs, team members and locations.",
+        "evidence": [
+            "src/Filament/Resources/StructuredContentItems/StructuredContentItemResource.php",
+            "src/Enums/StructuredContentType.php"
+        ]
+    },
+    {
+        "claim": "Each kind has its own fields.",
+        "evidence": [
+            "src/Data/StructuredContentDefinitionData.php",
+            "src/Enums/StructuredContentPayloadField.php"
+        ]
+    },
+    {
+        "claim": "Records show on a page once a developer has added them to your theme or a section.",
+        "evidence": [
+            "capell.json",
+            "src/Manifest/StructuredContentThemeAdapterContribution.php",
+            "src/Manifest/StructuredContentSectionAdapterContribution.php",
+            "src/Actions/BuildPublicStructuredContentItemsAction.php"
+        ]
+    },
+    {
+        "claim": "A record can carry a translation for each site language.",
+        "evidence": [
+            "src/Models/StructuredContentItem.php",
+            "src/Actions/SyncStructuredContentTranslationsAction.php",
+            "src/Actions/ResolveStructuredContentTranslationAction.php",
+            "src/Actions/BuildStructuredContentTranslationFormStateAction.php"
+        ]
+    },
+    {
+        "claim": "Records with a picture or logo show it with its alt text.",
+        "evidence": [
+            "src/Actions/ResolvePublicStructuredContentMediaAction.php",
+            "src/Actions/BuildPublicStructuredContentItemDataAction.php",
+            "resources/lang/en/admin.php"
+        ]
+    },
+    {
+        "claim": "Every record starts as a draft.",
+        "evidence": [
+            "src/Filament/Resources/StructuredContentItems/StructuredContentItemResource.php",
+            "src/Enums/StructuredContentStatus.php"
+        ]
+    },
+    {
+        "claim": "Publish it now, or publish it with a later date and it becomes available from then.",
+        "evidence": [
+            "src/Models/StructuredContentItem.php",
+            "src/Support/StructuredContentCache.php",
+            "src/Actions/DescribeStructuredContentAvailabilityAction.php"
+        ]
+    },
+    {
+        "claim": "Give it an end date and it leaves the site at that moment.",
+        "evidence": [
+            "src/Models/StructuredContentItem.php",
+            "src/Actions/DescribeStructuredContentAvailabilityAction.php",
+            "src/Actions/InvalidateDueScheduledStructuredContentCachesAction.php",
+            "src/Actions/ResolveStructuredContentCacheExpiryAction.php"
+        ]
+    },
+    {
+        "claim": "Each published change is kept in the revision history when Publishing Studio is installed, and you can restore an earlier version.",
+        "evidence": [
+            "src/Support/StructuredContentRevisions.php",
+            "src/Actions/BuildStructuredContentRevisionSnapshotAction.php",
+            "src/Actions/RestoreStructuredContentRevisionAction.php",
+            "src/Filament/Resources/StructuredContentItems/Pages/EditStructuredContentItem.php"
+        ]
+    },
+    {
+        "claim": "A record belongs to one site or to all of them.",
+        "evidence": [
+            "src/Filament/Resources/StructuredContentItems/StructuredContentItemResource.php",
+            "resources/lang/en/admin.php",
+            "src/Models/StructuredContentItem.php"
+        ]
+    },
+    {
+        "claim": "Global administrators change shared records, while an editor limited to one site changes only that site's.",
+        "evidence": [
+            "src/Policies/StructuredContentItemPolicy.php",
+            "src/Actions/AuthorizeStructuredContentMutationAction.php",
+            "resources/lang/en/admin.php"
+        ]
+    },
+    {
+        "claim": "Drafts and archived records never reach the site, and the Preview saved content button shows you the saved values.",
+        "evidence": [
+            "src/Enums/StructuredContentStatus.php",
+            "src/Support/StructuredContentCache.php",
+            "src/Filament/Resources/StructuredContentItems/Pages/EditStructuredContentItem.php",
+            "resources/views/admin/preview.blade.php",
+            "resources/lang/en/admin.php"
+        ]
+    }
+]

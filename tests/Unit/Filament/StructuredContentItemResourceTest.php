@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use BezhanSalleh\FilamentShield\FilamentShieldServiceProvider;
+use Capell\Admin\Enums\NavigationGroupEnum;
 use Capell\Core\Facades\CapellCore;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\CreateStructuredContentItem;
@@ -43,7 +44,7 @@ it('exposes a structured content Filament resource', function (): void {
 
     expect(StructuredContentItemResource::getModel())->toBe(StructuredContentItem::class)
         ->and(StructuredContentItemResource::shouldRegisterNavigation())->toBeTrue()
-        ->and(StructuredContentItemResource::getNavigationGroup())->toBe((string) __('capell-admin::navigation.group_content'))
+        ->and(StructuredContentItemResource::getNavigationGroup())->toBe(NavigationGroupEnum::Website)
         ->and(StructuredContentItemResource::getNavigationLabel())->toBe('Structured Content Items')
         ->and(StructuredContentItemResource::getModelLabel())->toBe('structured content item')
         ->and(StructuredContentItemResource::getPluralModelLabel())->toBe('structured content items')

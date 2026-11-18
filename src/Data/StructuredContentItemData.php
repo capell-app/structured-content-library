@@ -8,6 +8,7 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentStatus;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
@@ -29,5 +30,10 @@ class StructuredContentItemData extends Data
         #[WithCast(DateTimeInterfaceCast::class, format: [DATE_ATOM, 'Y-m-d H:i:s'], type: CarbonImmutable::class)]
         public readonly ?CarbonInterface $publishedAt = null,
         public readonly int $sortOrder = 0,
+        #[WithCast(DateTimeInterfaceCast::class, format: [DATE_ATOM, 'Y-m-d H:i:s'], type: CarbonImmutable::class)]
+        public readonly ?CarbonInterface $expiresAt = null,
+        /** @var list<StructuredContentTranslationData>|null Null leaves saved translations untouched. */
+        #[DataCollectionOf(StructuredContentTranslationData::class)]
+        public readonly ?array $translations = null,
     ) {}
 }

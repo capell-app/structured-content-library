@@ -1,0 +1,5 @@
+Your editors can keep content that turns up on several pages, such as a testimonial or a team profile, as a single record and edit it once. Structured Content Items sits in the Website group of the admin menu and holds nine kinds of record, such as testimonials, FAQs, team members and locations. Each kind has its own fields.
+
+Records show on a page once a developer has added them to your theme or a section. A record can carry a translation for each site language, and records with a picture or logo show it with its alt text.
+
+Every record starts as a draft. Publish it now, or publish it with a later date and it becomes available from then. Give it an end date and it leaves the site at that moment. Each published change is kept in the revision history when Publishing Studio is installed, and you can restore an earlier version. A record belongs to one site or to all of them. Global administrators change shared records, while an editor limited to one site changes only that site's. Drafts and archived records never reach the site, and the Preview saved content button shows you the saved values.

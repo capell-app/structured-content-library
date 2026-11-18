@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Actions;
 
-use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
-use Capell\StructuredContentLibrary\Support\StructuredContentCache;
 use Lorisleiva\Actions\Concerns\AsFake;
 use Lorisleiva\Actions\Concerns\AsObject;
 
@@ -26,16 +24,8 @@ final class InvalidateStructuredContentOrderAction
      */
     public function handle(array $itemKeys): void
     {
-        StructuredContentCache::flush();
-
-        if (! class_exists(CacheInvalidationRegistry::class) || ! app()->bound(CacheInvalidationRegistry::class)) {
-            return;
-        }
-
-        $registry = resolve(CacheInvalidationRegistry::class);
-
-        foreach (StructuredContentItem::query()->whereKey(array_values($itemKeys))->get() as $item) {
-            $registry->invalidateChangedModel($item);
-        }
+        InvalidateStructuredContentPublicOutputAction::run(
+            StructuredContentItem::query()->whereKey(array_values($itemKeys))->get()->all(),
+        );
     }
 }

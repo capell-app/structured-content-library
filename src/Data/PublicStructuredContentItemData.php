@@ -22,5 +22,7 @@ class PublicStructuredContentItemData extends Data
         public readonly ?string $summary = null,
         public readonly ?string $content = null,
         public readonly array $payload = [],
+        public readonly ?PublicStructuredContentMediaData $image = null,
+        public readonly ?PublicStructuredContentMediaData $logo = null,
     ) {}
 }

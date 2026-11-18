@@ -6,7 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
-    "description": "Maintain portable, reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations and logos.",
+    "description": "A single admin home for repeatable business content such as testimonials, FAQs, team members and locations, published by date.",
     "product": {
         "group": "Capell Essentials",
         "tier": "free",
@@ -18,6 +18,7 @@
         "requires": ["capell-app/admin", "capell-app/core"],
         "supports": [
             "capell-app/content-sections",
+            "capell-app/publishing-studio",
             "capell-app/theme-foundation"
         ],
         "conflicts": []
@@ -71,6 +72,23 @@
             "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentAssetsContribution",
             "surface": "admin",
             "assets": ["portable-list-semantics"]
+        },
+        {
+            "type": "scheduled-job",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentScheduledPublicationContribution",
+            "command": "structured-content-library:invalidate-due-caches",
+            "frequency": "everyMinute"
+        },
+        {
+            "type": "console-command",
+            "class": "Capell\\StructuredContentLibrary\\Manifest\\StructuredContentConsoleCommandsContribution",
+            "commands": ["structured-content-library:invalidate-due-caches"],
+            "commandClasses": [
+                "Capell\\StructuredContentLibrary\\Console\\Commands\\InvalidateDueScheduledStructuredContentCachesCommand"
+            ],
+            "excludedCommands": {
+                "capell:structured-content-library-screenshot-fixture": "Seeds disposable screenshot data only; not an operational command."
+            }
         }
     ],
     "database": {
@@ -82,7 +100,8 @@
         "install": null,
         "setup": null,
         "demo": null,
-        "doctor": null
+        "doctor": null,
+        "invalidateDueCaches": "structured-content-library:invalidate-due-caches"
     },
     "settings": [],
     "actions": {
@@ -171,44 +190,48 @@
         "privateDocsRequested": false
     },
     "marketplace": {
-        "summary": "A typed content library for testimonials, case studies, team members, FAQs, services and more: reusable, theme-safe records your themes render anywhere.",
-        "description": "Structured Content Library stores portable reusable records for case studies, testimonials, team members, services, FAQs, resources, partners, locations, and logos.",
-        "problem": "Editors repeat details such as testimonials across pages when they have no shared records.",
-        "outcome": "A site has reusable structured records that consuming sections and themes can use.",
+        "summary": "Edit testimonials, FAQs, team members, services and other repeat content once, in nine kinds of record, and publish by site and date.",
+        "description": "Keep testimonials, case studies, team members, services, FAQs, resources, partners, locations and logos as records in the admin instead of retyping them on each page. Choose a site or share a record across all of them, save drafts, archive old ones and preview what is saved. A theme or section displays the published records.",
+        "problem": "A team member changed job title and I am hunting for every page that still shows the old one.",
+        "outcome": "Repeat content is edited once and published to one site or all of them, now or from a date.",
         "faq": [
             {
-                "question": "Which content can be stored?",
-                "answer": "Editors can store reusable records such as case studies, testimonials, team members and services."
+                "question": "Does a record appear on my pages as soon as it is published?",
+                "answer": "Only once a developer has added it to your theme or a section. Drafts and archived records never reach the site."
             },
             {
-                "question": "Where do editors maintain items?",
-                "answer": "Structured items are maintained in one admin resource."
+                "question": "Can I schedule a record to go live and to leave?",
+                "answer": "Yes. Publish it with a later date and it becomes available from then, and give it an end date and it leaves the site at that moment."
             },
             {
-                "question": "How does public content use records?",
-                "answer": "Content Sections and themes receive hydrated public data without querying models from public views."
+                "question": "Can I restore an earlier version of a record?",
+                "answer": "Yes, when Publishing Studio is installed. Each published change is kept in the revision history."
+            },
+            {
+                "question": "Can an editor limited to one site change shared records?",
+                "answer": "No. A record belongs to one site or to all of them. Global administrators change shared records, while an editor limited to one site changes only that site's."
             }
         ],
         "screenshots": [
             {
                 "path": "docs/assets/marketplace/listing-structured-content-list.png",
-                "alt": "Structured content item list",
-                "caption": "Structured content item list"
+                "alt": "Structured Content Items table of six items with type, status, published date, sort order and Edit links",
+                "caption": "See each item's type, status and publish date, and search or sort the table."
             },
             {
                 "path": "docs/assets/marketplace/listing-structured-content-form.png",
-                "alt": "Structured content create form",
-                "caption": "Structured content create form"
+                "alt": "Create Structured Content Item form showing nine selectable type cards, from case study to logo",
+                "caption": "Choose one of nine types when you add an item. The type is fixed once it is saved."
             },
             {
                 "path": "docs/assets/marketplace/listing-structured-content-theme-rendering.png",
-                "alt": "Structured content reusable item edit form",
-                "caption": "Structured content reusable item edit form"
+                "alt": "Edit form for a testimonial with title, status, quote and attribution fields and Preview saved content and Delete buttons",
+                "caption": "Each type has its own fields, and Preview saved content shows the saved values."
             },
             {
                 "path": "docs/assets/marketplace/extension-card.jpg",
-                "alt": "Structured Content Library extension preview image",
-                "caption": "Structured Content Library extension preview"
+                "alt": "Structured Content Library listing card with a customer story testimonial beside the items table",
+                "caption": "Listing artwork for the package, not a working screen."
             }
         ],
         "categories": ["foundation", "shared", "content"]

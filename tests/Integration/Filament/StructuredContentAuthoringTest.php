@@ -12,7 +12,6 @@ use Capell\StructuredContentLibrary\Enums\StructuredContentType;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\CreateStructuredContentItem;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\EditStructuredContentItem;
 use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\Pages\ListStructuredContentItems;
-use Capell\StructuredContentLibrary\Filament\Resources\StructuredContentItems\StructuredContentItemResource;
 use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Capell\StructuredContentLibrary\Tests\StructuredContentLibraryTestCase;
@@ -24,6 +23,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 
 require_once dirname(__DIR__, 2) . '/StructuredContentLibraryTestCase.php';
@@ -237,7 +237,7 @@ it('does not let site editors open shared or other site items for editing', func
     $this->actingAs(new StructuredContentGlobalTestUser(global: false, assignedSiteIds: [$siteA]));
 
     Livewire::test(EditStructuredContentItem::class, ['record' => $shared->getRouteKey()])->assertForbidden();
-    $this->get(StructuredContentItemResource::getUrl('edit', ['record' => $other]))->assertNotFound();
+    Livewire::test(EditStructuredContentItem::class, ['record' => $other->getRouteKey()])->assertNotFound();
     Livewire::test(ListStructuredContentItems::class)
         ->assertCanSeeTableRecords([$shared])
         ->assertCanNotSeeTableRecords([$other]);
@@ -761,3 +761,65 @@ it('normalises duplicate sort values within the reordered set so the requested o
     expect($values)->toBe([5, 6, 7])
         ->and(StructuredContentItem::query()->ordered()->pluck('id')->all())->toBe([$c->getKey(), $a->getKey(), $b->getKey()]);
 });
+
+it('offers the picture upload that matches the chosen type', function (string $type, bool $image, bool $logo): void {
+    $component = Livewire::test(CreateStructuredContentItem::class)
+        ->set('data.type', $type);
+
+    $image ? $component->assertFormFieldIsVisible('media_image') : $component->assertFormFieldIsHidden('media_image');
+    $logo ? $component->assertFormFieldIsVisible('media_logo') : $component->assertFormFieldIsHidden('media_logo');
+})->with([
+    'team member photo' => ['team_member', true, false],
+    'partner logo' => ['partner', false, true],
+    'logo' => ['logo', false, true],
+    'faq has no picture' => ['faq', false, false],
+]);
+
+it('saves an end time and a translation from the form and reopens them', function (): void {
+    $languageId = structured_content_authoring_test_int(DB::table('sites')->where('id', $this->createStructuredContentSite('Translated site'))->value('language_id'));
+
+    Livewire::test(CreateStructuredContentItem::class)
+        ->set('data.type', 'faq')
+        ->fillForm([
+            'title' => 'How long does delivery take?',
+            'status' => 'published',
+            'site_id' => 'all',
+            'expires_at' => now()->addWeek()->format('Y-m-d H:i:s'),
+            'translations' => [
+                ['language_id' => $languageId, 'title' => 'Combien de temps dure la livraison ?', 'payload' => ['answer' => 'Deux jours.']],
+            ],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    $item = StructuredContentItem::query()->sole();
+
+    expect($item->expires_at)->not->toBeNull();
+    expect($item->translations()->sole()->getAttribute('title'))->toBe('Combien de temps dure la livraison ?');
+
+    $state = Livewire::test(EditStructuredContentItem::class, ['record' => $item->getRouteKey()])
+        ->assertSuccessful()
+        ->get('data.translations');
+
+    expect(array_values($state)[0]['title'] ?? null)->toBe('Combien de temps dure la livraison ?')
+        ->and(array_values($state)[0]['payload']['answer'] ?? null)->toBe('Deux jours.');
+});
+
+it('refuses an end time before the publish time in the form', function (): void {
+    Livewire::test(CreateStructuredContentItem::class)
+        ->set('data.type', 'faq')
+        ->fillForm([
+            'title' => 'Backwards',
+            'status' => 'published',
+            'site_id' => 'all',
+            'published_at' => now()->addDay()->format('Y-m-d H:i:s'),
+            'expires_at' => now()->format('Y-m-d H:i:s'),
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['expires_at']);
+});
+
+function structured_content_authoring_test_int(mixed $value): int
+{
+    return is_numeric($value) ? (int) $value : 0;
+}

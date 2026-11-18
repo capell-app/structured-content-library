@@ -22,14 +22,13 @@ class BuildPublicStructuredContentItemsAction
      */
     public function handle(StructuredContentType $type, ?int $siteId = null, ?int $limit = null): array
     {
-        $itemsByType = BuildPublicStructuredContentItemsForTypesAction::run([$type], $siteId);
-        $items = $this->itemsForType($itemsByType, $type);
-
-        if ($limit !== null) {
-            return array_slice($items, 0, max(0, $limit));
+        if ($limit !== null && $limit <= 0) {
+            return [];
         }
 
-        return $items;
+        $itemsByType = BuildPublicStructuredContentItemsForTypesAction::make()->limited($type, $siteId, $limit);
+
+        return $this->itemsForType($itemsByType, $type);
     }
 
     /**

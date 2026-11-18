@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Capell\StructuredContentLibrary\Support;
 
+use Capell\Core\Models\Media as CoreMedia;
 use Capell\StructuredContentLibrary\Actions\EnsurePortableContentHtmlAction;
 use Capell\StructuredContentLibrary\Actions\ResolveStructuredContentCacheExpiryAction;
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
@@ -13,8 +14,10 @@ use Capell\StructuredContentLibrary\Models\StructuredContentItem;
 use Closure;
 use Illuminate\Cache\TaggedCache;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
+use InvalidArgumentException;
 use JsonException;
 use Throwable;
 
@@ -27,12 +30,19 @@ final class StructuredContentCache
     private const string VERSION_KEY = self::PREFIX . ':version';
 
     /**
+     * Reads the records public at this moment, in display order, and caches their projection
+     * until the next publication or expiry boundary. A limit is applied by the database, so a
+     * "latest three" list never loads the whole library.
+     *
      * @param  list<StructuredContentType>  $types
      * @param  Closure(Collection<int, StructuredContentItem>): array<string, list<PublicStructuredContentItemData>>  $callback
+     * @param  int|null  $limit  Records to read for a single type; null reads them all.
      * @return array<string, list<PublicStructuredContentItemData>>
      */
-    public static function rememberPublicItemsByTypes(array $types, ?int $siteId, Closure $callback): array
+    public static function rememberPublicItemsByTypes(array $types, ?int $siteId, Closure $callback, ?int $limit = null): array
     {
+        throw_if($limit !== null && count($types) !== 1, InvalidArgumentException::class, 'A structured content limit applies to one type at a time.');
+
         $typeValues = array_map(
             static fn (StructuredContentType $type): string => $type->value,
             $types,
@@ -40,10 +50,11 @@ final class StructuredContentCache
         $typeValues = array_values(array_unique($typeValues));
         sort($typeValues);
 
-        $cacheKey = self::key('public-items-by-types-v2', [
+        $cacheKey = self::key('public-items-by-types-v4', [
             'locale' => app()->getLocale(),
             'site_id' => $siteId,
             'types' => implode(',', $typeValues),
+            'limit' => $limit,
         ]);
         $store = self::store();
         $payload = $store->get($cacheKey);
@@ -64,19 +75,39 @@ final class StructuredContentCache
             $store->forget($cacheKey);
         }
 
-        // Share one snapshot for public items and their next publication boundary.
-        // Fix the expiry before projection so a boundary crossed during the build cannot cache stale output.
+        // Fix the read moment and the next boundary before projection, so a boundary crossed
+        // during the build cannot cache stale output past it. A full read also fetches the
+        // scheduled records, so one query yields both the list and its next boundary; a limited
+        // read keeps the limit in the database and asks it for the boundary separately.
         $readAt = now()->toImmutable();
-        $records = StructuredContentItem::query()
+        $query = StructuredContentItem::query()
             ->whereIn('type', $types)
             ->visibleToSite($siteId)
             ->where('status', StructuredContentStatus::Published)
+            ->where(static function (Builder $query) use ($readAt): void {
+                $query->whereNull('expires_at')->orWhere('expires_at', '>', $readAt);
+            })
             ->ordered()
-            ->get();
-        $expiresAt = ResolveStructuredContentCacheExpiryAction::run($types, $siteId, $records, $readAt);
-        $items = $callback($records->filter(
-            static fn (StructuredContentItem $item): bool => $item->published_at === null || $item->published_at->lessThanOrEqualTo($readAt),
-        ));
+            ->with(['media', 'translations']);
+
+        if ($limit === null) {
+            $records = $query->get();
+            $expiresAt = ResolveStructuredContentCacheExpiryAction::run($types, $siteId, $records, $readAt);
+            $records = $records
+                ->filter(static fn (StructuredContentItem $item): bool => $item->published_at === null || $item->published_at->lessThanOrEqualTo($readAt))
+                ->values();
+        } else {
+            $expiresAt = ResolveStructuredContentCacheExpiryAction::run($types, $siteId, null, $readAt);
+            $records = $query
+                ->where(static function (Builder $query) use ($readAt): void {
+                    $query->whereNull('published_at')->orWhere('published_at', '<=', $readAt);
+                })
+                ->limit(max(0, $limit))
+                ->get();
+        }
+
+        self::loadMediaMetadata($records);
+        $items = $callback($records);
 
         $store->put($cacheKey, self::publicItemsPayload($items), $expiresAt);
 
@@ -93,6 +124,25 @@ final class StructuredContentCache
             }
         } catch (Throwable) {
             //
+        }
+    }
+
+    /**
+     * Media alt text and the decorative flag live in the media's translations; load them for
+     * every record's picture at once rather than once per record.
+     *
+     * @param  Collection<int, StructuredContentItem>  $records
+     */
+    private static function loadMediaMetadata(Collection $records): void
+    {
+        $media = $records
+            ->flatMap(static fn (StructuredContentItem $item): array => $item->media->all())
+            ->filter(static fn (mixed $item): bool => $item instanceof CoreMedia)
+            ->values()
+            ->all();
+
+        if ($media !== []) {
+            new Collection($media)->loadMissing('translations.language');
         }
     }
 

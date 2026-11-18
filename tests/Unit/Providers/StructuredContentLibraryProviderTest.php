@@ -9,6 +9,7 @@ use Capell\Frontend\Data\CacheInvalidationRule;
 use Capell\Frontend\Support\Cache\CacheInvalidationRegistry;
 use Capell\StructuredContentLibrary\Actions\BuildPublicStructuredContentItemsAction;
 use Capell\StructuredContentLibrary\Actions\BuildStructuredContentSectionsAction;
+use Capell\StructuredContentLibrary\Actions\InvalidateStructuredContentPublicOutputAction;
 use Capell\StructuredContentLibrary\Data\PublicStructuredContentItemData;
 use Capell\StructuredContentLibrary\Data\StructuredContentSectionData;
 use Capell\StructuredContentLibrary\Enums\StructuredContentType;
@@ -191,7 +192,7 @@ it('invalidates structured content cache entries after installation', function (
         $refresh();
 
         expect($registry->planForModel(StructuredContentItem::class)->rules)
-            ->toEqual([CacheInvalidationRule::invalidatePattern('structured-content-library-*')]);
+            ->toEqual(array_map(CacheInvalidationRule::invalidatePattern(...), InvalidateStructuredContentPublicOutputAction::PAGE_CACHE_PATTERNS));
     });
 });
 
@@ -200,10 +201,14 @@ it('keeps cache invalidation plans stable across repeated runtime refreshes', fu
         $refresh();
         $registry = $app->make(CacheInvalidationRegistry::class);
         $plan = $registry->planForModel(StructuredContentItem::class);
-        expect($plan->rules)->toEqual([CacheInvalidationRule::invalidatePattern('structured-content-library-*')]);
+        expect($plan->rules)->toEqual(array_map(CacheInvalidationRule::invalidatePattern(...), InvalidateStructuredContentPublicOutputAction::PAGE_CACHE_PATTERNS));
 
         $refresh();
 
         expect($registry->planForModel(StructuredContentItem::class))->toEqual($plan);
     });
+});
+
+it('ships a configurable public cache lifetime', function (): void {
+    expect(config('capell-structured-content-library.public_cache_ttl_seconds'))->toBe(300);
 });

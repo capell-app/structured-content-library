@@ -8,6 +8,7 @@ use Aimeos\Nestedset\NestedSetServiceProvider;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Capell\Admin\Providers\AdminServiceProvider as CapellAdminServiceProvider;
+use Capell\Core\Actions\Install\PrepareVendorTableMigrationAction;
 use Capell\Core\Facades\CapellCore;
 use Capell\Core\Macros\BlueprintMacros;
 use Capell\Core\Providers\CapellServiceProvider;
@@ -35,6 +36,8 @@ use Livewire\LivewireServiceProvider;
 use Lorisleiva\Actions\ActionServiceProvider;
 use Orchestra\Testbench\TestCase;
 use Override;
+use RuntimeException;
+use Spatie\Activitylog\ActivitylogServiceProvider;
 use Spatie\LaravelData\LaravelDataServiceProvider;
 
 spl_autoload_register(function (string $class): void {
@@ -118,6 +121,7 @@ class StructuredContentLibraryTestCase extends TestCase
             BladeIconsServiceProvider::class,
             BladeHeroiconsServiceProvider::class,
             CapellServiceProvider::class,
+            ActivitylogServiceProvider::class,
             NestedSetServiceProvider::class,
             ActionServiceProvider::class,
             LaravelDataServiceProvider::class,
@@ -153,13 +157,38 @@ class StructuredContentLibraryTestCase extends TestCase
         Config::set('database.connections.sqlite.url');
         Config::set('app.key', 'base64:' . base64_encode(str_repeat('x', 32)));
         Config::set('permission', $permissionConfig);
+        // Translations log their changes; these tests do not need the activity log table.
+        Config::set('activitylog.enabled', false);
         Blueprint::mixin(new BlueprintMacros);
         CapellCore::forcePackageInstalled(StructuredContentLibraryServiceProvider::$packageName);
     }
 
     protected function defineDatabaseMigrations(): void
     {
+        $this->loadMigrationsFrom($this->publishedMediaMigrationPath());
         $this->loadMigrationsFrom(dirname(__DIR__, 3) . '/vendor/capell-app/core/database/migrations');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
+
+    /**
+     * An install publishes the media library's table, configured by Core, ahead of Core's media
+     * migrations; Core then checks it owns the table by comparing the published file with that
+     * stub. Publish it the same way so records can carry pictures in these tests.
+     */
+    private function publishedMediaMigrationPath(): string
+    {
+        $directory = sys_get_temp_dir() . '/capell-structured-content-library-vendor-migrations-' . getmypid();
+        $stub = dirname(__DIR__, 3) . '/vendor/spatie/laravel-medialibrary/database/migrations/create_media_table.php.stub';
+        $contents = file_get_contents($stub);
+
+        throw_unless(is_string($contents), RuntimeException::class, 'The media library migration stub could not be read.');
+
+        if (! is_dir($directory)) {
+            mkdir($directory, 0o755, true);
+        }
+
+        file_put_contents($directory . '/2026_05_10_190826_create_media_table.php', PrepareVendorTableMigrationAction::run('create_media_table', $contents));
+
+        return $directory;
     }
 }
