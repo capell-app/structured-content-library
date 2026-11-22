@@ -18,8 +18,8 @@
     ],
     "require": {
         "php": "^8.4",
-        "capell-app/admin": "^1.0.66",
-        "capell-app/core": "^1.0.75",
+        "capell-app/admin": "^1.0.78",
+        "capell-app/core": "^1.0.79",
         "filament/forms": "^5.10.2",
         "filament/support": "^5.7.6",
         "lorisleiva/laravel-actions": "^2.8",

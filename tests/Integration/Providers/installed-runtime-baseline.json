@@ -5,7 +5,7 @@
         "default": {
             "source": {
                 "ref": "HEAD",
-                "commit": "3465441f1af5a1246bb22328bdc52eaca986c98d",
+                "commit": "ef86d8c36a0a0b3b7ee5eb549301fe05504b23da",
                 "providers": {
                     "Providers/MigrationMetadataServiceProvider.php": "9e721b99974669ed1de7d43b2e4e533b00af27fda48cccfd7d4ac59f855e9e42",
                     "Providers/StructuredContentLibraryServiceProvider.php": "5f40592da382bd28547a40b170666b43eb7131b164875c68d49513bbc28bd6c8"
@@ -234,7 +234,7 @@
                         "cache-dependency",
                         "cache-dependency:Capell\\StructuredContentLibrary\\Models\\StructuredContentItem",
                         "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem",
-                        "Capell\\Frontend\\Support\\Cache\\CacheInvalidationRegistry",
+                        "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry",
                         "frontend",
                         "context"
                     ]
@@ -281,6 +281,16 @@
                             }
                         }
                     },
+                    "Capell\\Core\\Support\\Cache\\CacheDependencyRegistry": {
+                        "items": {
+                            "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
+                                "structured-content-library-*",
+                                "page-*",
+                                "homepage-*",
+                                "system-page-*"
+                            ]
+                        }
+                    },
                     "Capell\\Core\\Support\\CapellCoreManager": {
                         "models": {
                             "StructuredContentItem": "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem"
@@ -295,16 +305,6 @@
                                         "2026_05_31_000001_create_structured_content_items_table": "structured_content_items"
                                     }
                                 }
-                            ]
-                        }
-                    },
-                    "Capell\\Frontend\\Support\\Cache\\CacheInvalidationDependencyRegistry": {
-                        "modelDependencies": {
-                            "Capell\\StructuredContentLibrary\\Models\\StructuredContentItem": [
-                                "structured-content-library-*",
-                                "page-*",
-                                "homepage-*",
-                                "system-page-*"
                             ]
                         }
                     }

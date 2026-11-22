@@ -162,7 +162,7 @@ class EditStructuredContentItem extends EditRecord
         foreach (StructuredContentRevisions::history($record) as $revision) {
             $time = $revision['created_at'] === null
                 ? ''
-                : CarbonImmutable::parse($revision['created_at'])->setTimezone(FilamentTimezone::get())->format('j M Y H:i T');
+                : CarbonImmutable::parse($revision['created_at'])->setTimezone(FilamentTimezone::get())->settings(['locale' => app()->getLocale()])->translatedFormat('j M Y H:i T');
             $replacements = ['version' => $revision['version'], 'event' => $revision['event'], 'time' => $time];
 
             $options[$revision['id']] = $revision['changed'] === []

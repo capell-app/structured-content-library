@@ -8,14 +8,14 @@ Records show on a page once a developer has added them to your theme or a sectio
 
 Every record starts as a draft. Publish it now, or publish it with a later date and it becomes available from then. Give it an end date and it leaves the site at that moment. Each published change is kept in the revision history when Publishing Studio is installed, and you can restore an earlier version. A record belongs to one site or to all of them. Global administrators change shared records, while an editor limited to one site changes only that site's. Drafts and archived records never reach the site, and the Preview saved content button shows you the saved values.
 
-- **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/extensions/structured-content-library).
-- **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/extensions/structured-content-library).
-- **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0.66`, `capell-app/core ^1.0.75`, `filament/forms ^5.10.2`, `filament/support ^5.7.6`, `lorisleiva/laravel-actions ^2.8`, `spatie/laravel-data ^4.5`, `spatie/laravel-package-tools ^1.14.1`, `ueberdosis/tiptap-php ^2.2`.
-- **Install:** `composer require capell-app/structured-content-library`.
+- **Price and availability:** Check current availability and price on the [Capell Marketplace listing](https://capell.app/marketplace/extensions/structured-content-library).
+- **Licence:** Check the licence terms on the [Capell Marketplace listing](https://capell.app/marketplace/extensions/structured-content-library).
+- **Requires:** `PHP ^8.4`, `capell-app/admin ^1.0.78`, `capell-app/core ^1.0.79`, `filament/forms ^5.10.2`, `filament/support ^5.7.6`, `lorisleiva/laravel-actions ^2.8`, `spatie/laravel-data ^4.5`, `spatie/laravel-package-tools ^1.14.1`, `ueberdosis/tiptap-php ^2.2`.
+- **Install:** `composer require capell-app/structured-content-library:@beta`.
 
 ## Quick Start
 
-1. Install the package: `composer require capell-app/structured-content-library`.
+1. Install the package: `composer require capell-app/structured-content-library:@beta`.
 2. Open the package admin surface at `/admin/structured-content-library/structured-content-items` and confirm Structured Content Library is available.
 
 ## For Developers
@@ -29,7 +29,7 @@ Typed data and adapter contributions provide a package boundary for public recor
 
 ## Limits And Pitfalls
 
-- Install the required Capell packages at the versions in `composer.json`: `capell-app/admin ^1.0.66`, `capell-app/core ^1.0.75`.
+- Install the required Capell packages at the versions in `composer.json`: `capell-app/admin ^1.0.78`, `capell-app/core ^1.0.79`.
 - Run migrations before opening package resources or public routes.
 - Keep the host Laravel scheduler running so package-registered schedules can execute: `structured-content-library:invalidate-due-caches (everyMinute; package registered)`.
 - Custom write integrations must preserve invalidation for `structured-content-library` cache tags.

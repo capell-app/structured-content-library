@@ -95,7 +95,6 @@ return [
     'media_logo_help' => 'Shown wherever your theme lists logos. Add alt text below, usually the organisation name; leave it blank to use the alt text saved in the media library.',
     'invalidated_due_caches' => '{1} Refreshed cached pages for :count scheduled structured content item.|[0,*] Refreshed cached pages for :count scheduled structured content items.',
     'model_label' => 'structured content item',
-    'navigation_group' => 'Content',
     // Matches the page heading Filament renders from `plural_model_label`.
     'navigation_label' => 'Structured Content Items',
     'payload_answer' => 'Answer',

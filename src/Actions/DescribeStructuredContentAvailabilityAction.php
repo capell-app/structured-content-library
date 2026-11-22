@@ -45,6 +45,6 @@ final class DescribeStructuredContentAvailabilityAction
 
     private function format(CarbonInterface $moment): string
     {
-        return $moment->setTimezone(FilamentTimezone::get())->format('j M Y H:i:s T');
+        return $moment->setTimezone(FilamentTimezone::get())->settings(['locale' => app()->getLocale()])->translatedFormat('j M Y H:i:s T');
     }
 }

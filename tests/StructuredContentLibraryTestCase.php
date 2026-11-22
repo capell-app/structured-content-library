@@ -17,6 +17,7 @@ use Capell\StructuredContentLibrary\Providers\StructuredContentLibraryServicePro
 use Capell\StructuredContentLibrary\Tests\Fixtures\Filament\StructuredContentTestPanelProvider;
 use Capell\StructuredContentLibrary\Tests\Fixtures\StructuredContentGlobalTestUser;
 use Capell\Tests\Support\Concerns\IsolatesTestbenchPaths;
+use Capell\Tests\Support\Concerns\RecordsInstalledPackageLifecycles;
 use Filament\Actions\ActionsServiceProvider;
 use Filament\FilamentServiceProvider;
 use Filament\Forms\FormsServiceProvider;
@@ -57,6 +58,7 @@ spl_autoload_register(function (string $class): void {
 class StructuredContentLibraryTestCase extends TestCase
 {
     use IsolatesTestbenchPaths;
+    use RecordsInstalledPackageLifecycles;
     use RefreshDatabase;
 
     #[Override]

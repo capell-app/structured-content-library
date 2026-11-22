@@ -66,6 +66,19 @@ it('describes a record ending soon and one that has ended', function (): void {
         ->and(DescribeStructuredContentAvailabilityAction::run($item))->toContain('until');
 });
 
+it('writes the availability date in the admin locale', function (): void {
+    $item = StructuredContentItem::factory()->published()->create(['expires_at' => CarbonImmutable::parse('2026-10-15 12:00:00', 'UTC')]);
+    app()->setLocale('de');
+
+    expect(DescribeStructuredContentAvailabilityAction::run($item))
+        ->toContain('15 Okt 2026')
+        ->not->toContain('Oct');
+
+    app()->setLocale('en');
+
+    expect(DescribeStructuredContentAvailabilityAction::run($item))->toContain('15 Oct 2026');
+});
+
 it('refuses an end time at or before the publish time', function (): void {
     CreateStructuredContentItemAction::run(new StructuredContentItemData(
         type: StructuredContentType::Faq,
