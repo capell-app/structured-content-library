@@ -6,6 +6,7 @@
     "kind": "package",
     "capellApiVersion": "^1.0",
     "version": "1.0.0",
+    "launchStatus": "preview",
     "description": "A single admin home for repeatable business content such as testimonials, FAQs, team members and locations, published by date.",
     "product": {
         "group": "Capell Essentials",
